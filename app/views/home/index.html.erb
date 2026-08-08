@@ -1,0 +1,8 @@
+<div class="space-y-3">
+  <h1 class="text-2xl font-semibold">Dental Lab Manager</h1>
+  <% if current_user.employee? %>
+    <p class="text-slate-600">Перейдите в <%= link_to "Мои задачи", my_tasks_path, class: "underline" %> — ваши назначения и статусы.</p>
+  <% else %>
+    <p class="text-slate-600">Админ-поток: наряды, <%= link_to "оплаты сотрудникам", technician_payouts_path, class: "underline" %>, <%= link_to "оплаты заказчиков", customer_payment_orders_path, class: "underline" %>. Сотрудники — «Мои задачи».</p>
+  <% end %>
+</div>

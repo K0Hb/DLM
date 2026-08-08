@@ -1,0 +1,120 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold">Мои задачи</h1>
+    <p class="text-sm text-slate-600">
+      Начислено (выполнено) за фильтр: <strong><%= number_to_currency(@completed_sum) %></strong>
+      · оплачено: <strong class="text-emerald-700"><%= number_to_currency(@paid_sum) %></strong>
+      · не оплачено: <strong class="text-red-700"><%= number_to_currency(@unpaid_sum) %></strong>
+    </p>
+  </div>
+  <div class="flex flex-wrap gap-3 text-sm">
+    <%= link_to "Журналы", payment_events_path, class: "underline" %>
+  </div>
+</div>
+
+<nav class="mb-6 flex flex-wrap gap-2 border-b border-slate-200 text-sm" aria-label="Мои задачи">
+  <% tasks_tab_class = @tab == "tasks" ? "border-b-2 border-slate-900 font-medium text-slate-900 -mb-px pb-2" : "pb-2 text-slate-600 hover:text-slate-900" %>
+  <% earnings_tab_class = @tab == "earnings" ? "border-b-2 border-slate-900 font-medium text-slate-900 -mb-px pb-2" : "pb-2 text-slate-600 hover:text-slate-900" %>
+  <%= link_to "Задачи", my_tasks_path(request.query_parameters.except("tab")), class: tasks_tab_class %>
+  <%= link_to "Начисления и оплаты", my_tasks_path(request.query_parameters.merge(tab: "earnings")), class: earnings_tab_class %>
+</nav>
+
+<%= form_with url: my_tasks_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
+  <%= hidden_field_tag :tab, @tab if @tab == "earnings" %>
+  <% if @tab == "tasks" %>
+    <div>
+      <label class="mb-1 block text-xs text-slate-500" for="status">Статус</label>
+      <%= select_tag :status,
+                     options_for_select(service_line_status_options(include_blank: "Все"), params[:status]),
+                     id: "status",
+                     class: "rounded border px-2 py-1" %>
+    </div>
+  <% end %>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="paid">Оплата сотруднику</label>
+    <%= select_tag :paid,
+                   options_for_select([["Все", ""], ["Оплачено", "yes"], ["Не оплачено", "no"]], params[:paid]),
+                   id: "paid",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="from">С</label>
+    <%= date_field_tag :from, params[:from], id: "from", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="to">По</label>
+    <%= date_field_tag :to, params[:to], id: "to", class: "rounded border px-2 py-1" %>
+  </div>
+  <%= submit_tag "Фильтр", class: "rounded bg-slate-800 px-3 py-1 text-white" %>
+  <%= link_to "Сбросить", my_tasks_path(tab: (@tab == "earnings" ? "earnings" : nil)), class: "underline self-center" %>
+<% end %>
+
+<% if @tab == "earnings" %>
+  <table class="w-full border-collapse text-left text-sm">
+    <thead>
+      <tr class="border-b text-slate-500">
+        <th class="py-2 pr-2">Наряд</th>
+        <th class="py-2 pr-2">Услуга</th>
+        <th class="py-2 pr-2">Статус</th>
+        <th class="py-2 pr-2">Оплата</th>
+        <th class="py-2 pr-2">Сумма</th>
+        <th class="py-2 pr-2">Выполнено</th>
+        <th class="py-2 pr-2">Оплачено</th>
+        <th class="py-2 pr-2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @lines.empty? %>
+        <tr><td colspan="8" class="py-6 text-slate-500">Записей нет</td></tr>
+      <% else %>
+        <% @lines.each do |line| %>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-2 pr-2"><%= record_link("##{line.work_order.number}", work_order_path(line.work_order)) %></td>
+            <td class="py-2 pr-2"><%= line.service.name %> × <%= line.quantity %></td>
+            <td class="py-2 pr-2"><%= service_line_status_badge(line) %></td>
+            <td class="py-2 pr-2"><%= technician_paid_badge(line) %></td>
+            <td class="py-2 pr-2"><%= number_to_currency(line.amount) %></td>
+            <td class="py-2 pr-2"><%= line.completed_at&.strftime("%d.%m.%Y") || "—" %></td>
+            <td class="py-2 pr-2"><%= line.technician_paid_at&.strftime("%d.%m.%Y") || "—" %></td>
+            <td class="py-2 pr-2"><%= open_record_link(my_task_path(line)) %></td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <table class="w-full border-collapse text-left text-sm">
+    <thead>
+      <tr class="border-b border-slate-200 text-slate-500">
+        <th class="py-2 pr-3">Наряд</th>
+        <th class="py-2 pr-3">Пациент</th>
+        <th class="py-2 pr-3">Услуга</th>
+        <th class="py-2 pr-3">Кол-во</th>
+        <th class="py-2 pr-3">Статус</th>
+        <th class="py-2 pr-3">Оплата</th>
+        <th class="py-2 pr-3">Срок</th>
+        <th class="py-2 pr-3">Сумма</th>
+        <th class="py-2 pr-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @lines.empty? %>
+        <tr><td colspan="9" class="py-6 text-slate-500">Задач нет</td></tr>
+      <% else %>
+        <% @lines.each do |line| %>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-2 pr-3"><%= record_link("##{line.work_order.number}", work_order_path(line.work_order)) %></td>
+            <td class="py-2 pr-3"><%= line.work_order.patient&.full_name || "—" %></td>
+            <td class="py-2 pr-3"><%= line.service.name %></td>
+            <td class="py-2 pr-3"><%= line.quantity %></td>
+            <td class="py-2 pr-3"><%= service_line_status_badge(line) %></td>
+            <td class="py-2 pr-3"><%= technician_paid_badge(line) %></td>
+            <td class="py-2 pr-3"><%= line.work_order.due_at&.strftime("%d.%m.%Y") || "—" %></td>
+            <td class="py-2 pr-3"><%= number_to_currency(line.amount) %></td>
+            <td class="py-2 pr-3"><%= open_record_link(my_task_path(line)) %></td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

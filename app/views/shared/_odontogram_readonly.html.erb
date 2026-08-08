@@ -1,0 +1,39 @@
+<%# locals: work_order, sidebar: false %>
+<% work_order = local_assigns.fetch(:work_order) %>
+<% sidebar = local_assigns.fetch(:sidebar, false) %>
+<% formula = Odontogram.normalize(work_order.dental_formula) %>
+<div class="<%= sidebar ? "mb-0" : "mb-8" %>">
+  <div data-controller="odontogram"
+       data-odontogram-readonly-value="true"
+       data-odontogram-labels-value="<%= ERB::Util.html_escape(Odontogram.labels_map.to_json) %>"
+       data-odontogram-colors-value="<%= ERB::Util.html_escape(Odontogram.colors_map.to_json) %>"
+       data-odontogram-material-labels-value="<%= ERB::Util.html_escape(Odontogram.material_labels_map.to_json) %>"
+       class="odontogram-panel odontogram-panel--readonly <%= "odontogram-panel--sidebar" if sidebar %>">
+    <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
+      <div>
+        <h2 class="odontogram-title">Зубная формула</h2>
+        <p class="odontogram-hint">FDI · <%= sidebar ? "схема масштабируется под экран" : "только просмотр" %></p>
+      </div>
+      <div class="text-sm text-slate-600">
+        Цвет: <strong><%= Odontogram.shade_label_for(formula["shade"] || work_order.tooth_color).presence || "—" %></strong>
+      </div>
+    </div>
+
+    <div class="hidden lg:block odontogram-legend mb-3">
+      <% Odontogram.types.each do |t| %>
+        <span class="odontogram-legend-item">
+          <span class="odontogram-legend-swatch" style="background: <%= t["color"] %>"></span>
+          <%= t["name"] %>
+        </span>
+      <% end %>
+    </div>
+
+    <input type="hidden" data-odontogram-target="input" value="<%= ERB::Util.html_escape(formula.to_json) %>">
+
+    <div data-odontogram-target="summaryList" class="odontogram-summary odontogram-summary--first-mobile"></div>
+
+    <div class="odontogram-stage">
+      <%= render "work_orders/odontogram_chart", readonly: true %>
+    </div>
+  </div>
+</div>

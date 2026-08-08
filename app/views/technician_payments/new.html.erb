@@ -1,0 +1,77 @@
+<div class="mb-6 max-w-3xl">
+  <h1 class="text-2xl font-semibold"><%= @paid ? "Подтверждение оплаты сотруднику" : "Снятие отметки оплаты сотруднику" %></h1>
+  <p class="mt-1 text-sm text-slate-600">
+    Отметьте услуги галочками. Снимите галочку, чтобы не включать строку в эту операцию.
+    Без подтверждения статус не изменится.
+  </p>
+</div>
+
+<%= form_with url: technician_payment_path, method: :post,
+              class: "max-w-3xl space-y-4 text-sm",
+              data: { controller: "payment-line-select" } do %>
+  <%= hidden_field_tag :paid, @paid %>
+  <%= hidden_field_tag :return_to, @return_to %>
+
+  <div class="flex flex-wrap gap-3 text-sm">
+    <button type="button" data-action="payment-line-select#checkAll" class="underline">Отметить все</button>
+    <button type="button" data-action="payment-line-select#uncheckAll" class="underline">Снять все</button>
+  </div>
+
+  <table class="w-full border-collapse text-left">
+    <thead>
+      <tr class="border-b text-slate-500">
+        <th class="py-2 pr-2 w-10"></th>
+        <th class="py-2 pr-2">Наряд</th>
+        <th class="py-2 pr-2">Услуга</th>
+        <th class="py-2 pr-2">Исполнитель</th>
+        <th class="py-2 pr-2">Статус</th>
+        <th class="py-2 pr-2">Сумма</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @lines.each do |line| %>
+        <tr class="border-b">
+          <td class="py-2 pr-2">
+            <%= check_box_tag "work_order_service_ids[]",
+                              line.id,
+                              false,
+                              id: "wos_#{line.id}",
+                              data: {
+                                payment_line_select_target: "line",
+                                amount: line.amount.to_f,
+                                action: "change->payment-line-select#recalc"
+                              } %>
+          </td>
+          <td class="py-2 pr-2">
+            <label for="wos_<%= line.id %>">#<%= line.work_order.number %></label>
+          </td>
+          <td class="py-2 pr-2"><%= line.service.name %> × <%= line.quantity %></td>
+          <td class="py-2 pr-2"><%= line.assignee.full_name %></td>
+          <td class="py-2 pr-2"><%= service_line_status_badge(line) %></td>
+          <td class="py-2 pr-2"><%= number_to_currency(line.amount) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <p class="font-medium">
+    Итого по отмеченным:
+    <span data-payment-line-select-target="total"><%= number_to_currency(0) %></span>
+  </p>
+
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="paid_at">Дата <%= @paid ? "оплаты" : "операции" %></label>
+    <%= datetime_local_field_tag :paid_at, @paid_at.strftime("%Y-%m-%dT%H:%M"), id: "paid_at", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="note">Комментарий (необязательно)</label>
+    <%= text_area_tag :note, @note, id: "note", rows: 2, class: "w-full rounded border px-2 py-1" %>
+  </div>
+
+  <div class="flex flex-wrap gap-3">
+    <%= submit_tag "Подтвердить",
+                   class: "rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-40",
+                   data: { payment_line_select_target: "submit" } %>
+    <%= link_to "Отмена", @cancel_path, class: "underline self-center" %>
+  </div>
+<% end %>

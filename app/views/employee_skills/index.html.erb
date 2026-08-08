@@ -1,0 +1,24 @@
+<div class="mb-6 flex items-center justify-between gap-4">
+  <h1 class="text-2xl font-semibold">Пул услуг сотрудников</h1>
+</div>
+
+<table class="w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="border-b border-slate-200 text-slate-500">
+      <th class="py-2 pr-3">ФИО</th>
+      <th class="py-2 pr-3">Email</th>
+      <th class="py-2 pr-3">Услуг в пуле</th>
+      <th class="py-2"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @employees.each do |employee| %>
+      <tr class="border-b border-slate-100 hover:bg-slate-50">
+        <td class="py-2 pr-3"><%= record_link(employee.full_name, user_path(employee)) %></td>
+        <td class="py-2 pr-3"><%= employee.email %></td>
+        <td class="py-2 pr-3"><%= employee.services.count %></td>
+        <td class="py-2 pr-3 text-right"><%= open_record_link(edit_employee_skill_path(employee), label: "Назначить") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

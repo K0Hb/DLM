@@ -1,0 +1,2 @@
+class PatientPolicy < CatalogPolicy
+end

@@ -1,0 +1,26 @@
+<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold"><%= @record.name %></h1>
+    <p class="text-sm text-slate-600">Услуга · <%= @record.active? ? "активна" : "неактивна" %></p>
+  </div>
+  <div class="flex flex-wrap gap-3 text-sm">
+    <%= link_to "Изменить", edit_service_path(@record), class: "rounded border px-3 py-1" %>
+    <%= link_to "К списку", services_path, class: "underline px-2 py-1" %>
+  </div>
+</div>
+
+<div class="mb-8 grid gap-2 text-sm max-w-3xl">
+  <div>Ставка технику: <%= number_to_currency(@record.technician_price) %></div>
+  <div class="md:col-span-2">
+    <div class="font-medium">Описание</div>
+    <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= @record.description.presence || "—" %></div>
+  </div>
+</div>
+
+<div class="max-w-3xl border-t pt-4">
+  <%= button_to "Удалить",
+                @record,
+                method: :delete,
+                form: { data: { turbo_confirm: "Удалить услугу «#{@record.name}»?" } },
+                class: "rounded border border-red-700 px-3 py-1 text-sm text-red-800" %>
+</div>

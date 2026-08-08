@@ -1,0 +1,8 @@
+ivanov:
+  full_name: Иванов И.И.
+  customer: clinic
+  active: true
+
+without_customer:
+  full_name: Петров П.П.
+  active: true

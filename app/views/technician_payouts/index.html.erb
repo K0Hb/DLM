@@ -1,0 +1,101 @@
+<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold">Оплаты сотрудникам</h1>
+    <p class="text-sm text-slate-600">Невыплаченные строки услуг. Отметьте галочками и перейдите к подтверждению.</p>
+  </div>
+  <%= link_to "Журналы", payment_events_path, class: "text-sm underline" %>
+</div>
+
+<%= form_with url: technician_payouts_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="assignee_id">Исполнитель</label>
+    <%= select_tag :assignee_id,
+                   options_from_collection_for_select(@employees, :id, :full_name, params[:assignee_id]),
+                   include_blank: "Все",
+                   id: "assignee_id",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="status">Статус строки</label>
+    <%= select_tag :status,
+                   options_for_select(service_line_status_options(include_blank: "Все"), params[:status]),
+                   id: "status",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <%= submit_tag "Фильтр", class: "rounded bg-slate-800 px-3 py-1 text-white" %>
+  <% if params[:assignee_id].present? || params[:status].present? %>
+    <%= link_to "Сбросить", technician_payouts_path, class: "underline self-center" %>
+  <% end %>
+<% end %>
+
+<% if @lines.empty? %>
+  <p class="text-sm text-slate-500">Нет строк, доступных для оплаты сотруднику.</p>
+<% else %>
+  <%= form_with url: new_technician_payment_path, method: :get,
+                class: "space-y-4 text-sm",
+                data: { controller: "payment-line-select" } do %>
+    <%= hidden_field_tag :paid, true %>
+    <%= hidden_field_tag :return_to, technician_payouts_path(assignee_id: params[:assignee_id], status: params[:status]) %>
+
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap gap-3">
+        <button type="button" data-action="payment-line-select#checkAll" class="underline">Отметить все</button>
+        <button type="button" data-action="payment-line-select#uncheckAll" class="underline">Снять все</button>
+      </div>
+      <p class="text-slate-600">
+        Строк: <strong><%= @lines.size %></strong>
+        · сумма списка: <strong><%= number_to_currency(@total_amount) %></strong>
+        · отмечено: <strong data-payment-line-select-target="total"><%= number_to_currency(0) %></strong>
+      </p>
+    </div>
+
+    <table class="w-full border-collapse text-left text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 text-slate-500">
+          <th class="py-2 pr-2 w-10"></th>
+          <th class="py-2 pr-2">Наряд</th>
+          <th class="py-2 pr-2">Исполнитель</th>
+          <th class="py-2 pr-2">Услуга</th>
+          <th class="py-2 pr-2">Статус</th>
+          <th class="py-2 pr-2">Заказчик</th>
+          <th class="py-2 pr-2">Пациент</th>
+          <th class="py-2 pr-2">Сумма</th>
+          <th class="py-2 pr-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @lines.each do |line| %>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-2 pr-2">
+              <%= check_box_tag "work_order_service_ids[]",
+                                line.id,
+                                false,
+                                id: "payout_#{line.id}",
+                                data: {
+                                  payment_line_select_target: "line",
+                                  amount: line.amount.to_f,
+                                  action: "change->payment-line-select#recalc"
+                                } %>
+            </td>
+            <td class="py-2 pr-2">
+              <label for="payout_<%= line.id %>"><%= record_link("##{line.work_order.number}", work_order_path(line.work_order)) %></label>
+            </td>
+            <td class="py-2 pr-2"><%= line.assignee.full_name %></td>
+            <td class="py-2 pr-2"><%= line.service.name %> × <%= line.quantity %></td>
+            <td class="py-2 pr-2"><%= service_line_status_badge(line) %></td>
+            <td class="py-2 pr-2"><%= line.work_order.customer.name %></td>
+            <td class="py-2 pr-2"><%= line.work_order.patient&.full_name || "—" %></td>
+            <td class="py-2 pr-2"><%= number_to_currency(line.amount) %></td>
+            <td class="py-2 pr-2"><%= open_record_link(work_order_path(line.work_order)) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="flex flex-wrap gap-3">
+      <%= submit_tag "К подтверждению оплаты",
+                     class: "rounded bg-emerald-800 px-4 py-2 text-white disabled:opacity-40",
+                     data: { payment_line_select_target: "submit" } %>
+    </div>
+  <% end %>
+<% end %>

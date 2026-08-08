@@ -1,0 +1,53 @@
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold">Наряды за период</h1>
+    <p class="text-sm text-slate-600">Фильтр по дате создания</p>
+  </div>
+  <%= link_to "К отчётам", reports_path, class: "underline text-sm" %>
+</div>
+
+<%= form_with url: reports_work_orders_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="from">С</label>
+    <%= date_field_tag :from, @from, id: "from", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="to">По</label>
+    <%= date_field_tag :to, @to, id: "to", class: "rounded border px-2 py-1" %>
+  </div>
+  <%= submit_tag "Показать", class: "rounded bg-slate-800 px-3 py-1 text-white" %>
+  <%= link_to "CSV", reports_work_orders_path(from: @from, to: @to, format: :csv), class: "underline self-center" %>
+<% end %>
+
+<table class="w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="border-b text-slate-500">
+      <th class="py-2 pr-3">№</th>
+      <th class="py-2 pr-3">Создан</th>
+      <th class="py-2 pr-3">Заказчик</th>
+      <th class="py-2 pr-3">Пациент</th>
+      <th class="py-2 pr-3">Статус</th>
+      <th class="py-2 pr-3">Срок</th>
+      <th class="py-2 pr-3">Оплата</th>
+      <th class="py-2 pr-3"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if @work_orders.empty? %>
+      <tr><td colspan="8" class="py-6 text-slate-500">Нет нарядов за период</td></tr>
+    <% else %>
+      <% @work_orders.each do |order| %>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-2 pr-3"><%= record_link("##{order.number}", work_order_path(order)) %></td>
+          <td class="py-2 pr-3"><%= order.created_at.strftime("%d.%m.%Y") %></td>
+          <td class="py-2 pr-3"><%= order.customer.name %></td>
+          <td class="py-2 pr-3"><%= order.patient&.full_name || "—" %></td>
+          <td class="py-2 pr-3"><%= work_order_status_badge(order) %></td>
+          <td class="py-2 pr-3"><%= order.due_at&.strftime("%d.%m.%Y") || "—" %></td>
+          <td class="py-2 pr-3"><%= customer_paid_badge(order) %><% if order.customer_paid? %> · <%= number_to_currency(order.customer_paid_amount) %><% end %></td>
+          <td class="py-2 pr-3"><%= open_record_link(work_order_path(order)) %></td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>

@@ -1,0 +1,96 @@
+# Конфиг odontogram: типы работ, материалы и цвета (shade) зубов.
+# Правка файла + рестарт приложения — UI и валидация подхватят изменения.
+# Без admin CRUD и без таблиц в БД.
+#
+# types:
+#   code  — ключ в dental_formula.teeth[].type
+#   name  — подпись в UI
+#   color — цвет кнопки зуба в формуле (hex)
+#
+# materials:
+#   code  — ключ в dental_formula.teeth[].material (или null)
+#   name  — подпись в выпадающем списке
+#
+# shades:
+#   code  — ключ в dental_formula.shade / WorkOrder.tooth_color (или null)
+#   name  — подпись в выпадающем списке (обычно совпадает с code)
+
+types:
+  - code: antagonist
+    name: Антагонист
+    color: "#64748B"
+  - code: healthy
+    name: Здоровый зуб
+    color: "#EAB308"
+  - code: crown
+    name: Коронка
+    color: "#2563EB"
+  - code: coping
+    name: Каркас
+    color: "#7C3AED"
+  - code: veneer
+    name: Винир
+    color: "#0891B2"
+  - code: inlay
+    name: Вкладка
+    color: "#059669"
+  - code: abutment
+    name: Абатмент
+    color: "#0F766E"
+  - code: missing
+    name: Отсутствует
+    color: "#E11D48"
+  - code: bridge
+    name: Мост
+    color: "#DB2777"
+
+materials:
+  - code: zirconia
+    name: Zr
+  - code: emax
+    name: E.max
+  - code: cocr
+    name: CoCr
+  - code: titanium
+    name: Ti
+  - code: pmma
+    name: PMMA
+  - code: pfm
+    name: Металлокерамика
+  - code: precious
+    name: Драгоценный сплав
+
+# Vita Classical (стандартный шкальный набор для ЗТЛ)
+shades:
+  - code: A1
+    name: A1
+  - code: A2
+    name: A2
+  - code: A3
+    name: A3
+  - code: A3.5
+    name: A3.5
+  - code: A4
+    name: A4
+  - code: B1
+    name: B1
+  - code: B2
+    name: B2
+  - code: B3
+    name: B3
+  - code: B4
+    name: B4
+  - code: C1
+    name: C1
+  - code: C2
+    name: C2
+  - code: C3
+    name: C3
+  - code: C4
+    name: C4
+  - code: D2
+    name: D2
+  - code: D3
+    name: D3
+  - code: D4
+    name: D4

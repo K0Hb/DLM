@@ -1,0 +1,55 @@
+<%= form_with model: user, class: "max-w-lg space-y-4" do |f| %>
+  <% if user.errors.any? %>
+    <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+      <ul class="list-disc pl-4">
+        <% user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :full_name, "ФИО", class: "block text-sm font-medium" %>
+    <%= f.text_field :full_name, required: true, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+
+  <div>
+    <%= f.label :email, "Email", class: "block text-sm font-medium" %>
+    <%= f.email_field :email, required: true, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+
+  <div>
+    <%= f.label :role, "Роль", class: "block text-sm font-medium" %>
+    <% if current_user.superadmin? %>
+      <%= f.select :role, User::ROLES, {}, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2" %>
+    <% else %>
+      <%= f.hidden_field :role, value: "employee" %>
+      <p class="mt-1 text-sm text-slate-600">Сотрудник</p>
+    <% end %>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <%= f.check_box :active %>
+    <%= f.label :active, "Активен" %>
+  </div>
+
+  <div>
+    <%= f.label :password, user.persisted? ? "Новый пароль (оставьте пустым, чтобы не менять)" : "Пароль", class: "block text-sm font-medium" %>
+    <%= f.password_field :password, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2", autocomplete: "new-password" %>
+  </div>
+
+  <div>
+    <%= f.label :password_confirmation, "Подтверждение пароля", class: "block text-sm font-medium" %>
+    <%= f.password_field :password_confirmation, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2", autocomplete: "new-password" %>
+  </div>
+
+  <% if user.employee? && !user.persisted? %>
+    <p class="text-sm text-slate-600">Пул услуг назначается после создания в разделе «Пул услуг».</p>
+  <% end %>
+
+  <div class="flex gap-3">
+    <%= f.submit user.persisted? ? "Сохранить" : "Создать", class: "rounded bg-slate-900 px-4 py-2 text-sm text-white" %>
+    <%= link_to "Отмена", users_path, class: "rounded px-4 py-2 text-sm text-slate-600 underline" %>
+  </div>
+<% end %>

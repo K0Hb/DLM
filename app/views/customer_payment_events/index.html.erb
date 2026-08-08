@@ -1,0 +1,78 @@
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold">Журнал оплат заказчиков</h1>
+  <p class="mt-1 text-sm text-slate-600">Только факты фиксации. Записи не редактируются.</p>
+</div>
+
+<%= render "shared/payment_event_tabs", active: :customer %>
+
+<div class="mb-4 flex flex-wrap justify-end gap-3 text-sm">
+  <%= link_to "К оплатам заказчиков", customer_payment_orders_path, class: "underline" %>
+</div>
+
+<%= form_with url: customer_payment_events_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="event_type">Тип</label>
+    <%= select_tag :event_type,
+                   options_for_select([["Все", ""]] + %w[customer_paid customer_unpaid].map { |t| [PaymentEvent.new(event_type: t).label, t] }, params[:event_type]),
+                   id: "event_type", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="customer_id">Заказчик</label>
+    <%= select_tag :customer_id,
+                   options_from_collection_for_select(@customers, :id, :name, params[:customer_id]),
+                   include_blank: "Все",
+                   id: "customer_id", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="from">С</label>
+    <%= date_field_tag :from, params[:from], id: "from", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="to">По</label>
+    <%= date_field_tag :to, params[:to], id: "to", class: "rounded border px-2 py-1" %>
+  </div>
+  <%= submit_tag "Фильтр", class: "rounded bg-slate-800 px-3 py-1 text-white" %>
+<% end %>
+
+<table class="w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="border-b text-slate-500">
+      <th class="py-2 pr-2">Когда</th>
+      <th class="py-2 pr-2">Событие</th>
+      <th class="py-2 pr-2">Кто</th>
+      <th class="py-2 pr-2">Наряд</th>
+      <th class="py-2 pr-2">Заказчик</th>
+      <th class="py-2 pr-2">Сумма</th>
+      <th class="py-2 pr-2">Коммент.</th>
+      <th class="py-2 pr-2"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if @events.empty? %>
+      <tr><td colspan="8" class="py-6 text-slate-500">Событий нет</td></tr>
+    <% else %>
+      <% @events.each do |event| %>
+        <tr class="border-b border-slate-100">
+          <td class="py-2 pr-2 whitespace-nowrap"><%= event.created_at.strftime("%d.%m.%Y %H:%M") %></td>
+          <td class="py-2 pr-2"><%= event.label %></td>
+          <td class="py-2 pr-2"><%= event.actor.full_name %></td>
+          <td class="py-2 pr-2">
+            <% if event.work_order %>
+              <%= record_link("##{event.work_order.number}", work_order_path(event.work_order)) %>
+            <% else %>
+              —
+            <% end %>
+          </td>
+          <td class="py-2 pr-2"><%= event.work_order&.customer&.name || "—" %></td>
+          <td class="py-2 pr-2"><%= number_to_currency(event.amount) %></td>
+          <td class="py-2 pr-2"><%= event.note.presence || "—" %></td>
+          <td class="py-2 pr-2 text-right">
+            <% if event.work_order %>
+              <%= open_record_link(work_order_path(event.work_order)) %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>

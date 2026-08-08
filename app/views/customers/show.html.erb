@@ -1,0 +1,122 @@
+<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold"><%= @record.name %></h1>
+    <p class="text-sm text-slate-600">Заказчик · <%= @record.active? ? "активен" : "неактивен" %></p>
+  </div>
+  <div class="flex flex-wrap gap-3 text-sm">
+    <%= link_to "Изменить", edit_customer_path(@record), class: "rounded border px-3 py-1" %>
+    <%= link_to "К списку", customers_path, class: "underline px-2 py-1" %>
+  </div>
+</div>
+
+<div class="mb-8 grid gap-2 text-sm md:grid-cols-2 max-w-3xl">
+  <div>Телефон: <%= @record.phone.presence || "—" %></div>
+  <div>Email: <%= @record.email.presence || "—" %></div>
+  <div class="md:col-span-2">Адрес: <%= @record.address.presence || "—" %></div>
+  <div class="md:col-span-2">
+    <div class="font-medium">Заметки</div>
+    <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= @record.notes.presence || "—" %></div>
+  </div>
+</div>
+
+<div class="mb-8 rounded border bg-white p-4 text-sm">
+  <h2 class="mb-2 text-base font-semibold">Наряды и оплата</h2>
+  <p class="mb-3 text-slate-600">
+    Всего нарядов: <strong><%= @work_orders.size %></strong>
+    · не оплачено: <strong class="text-red-700"><%= @unpaid_orders.size %></strong>
+    <% if @unpaid_total.positive? %>
+      · к оплате: <strong><%= number_to_currency(@unpaid_total) %></strong>
+    <% end %>
+  </p>
+  <% if @unpaid_orders.any? %>
+    <%= link_to "Оплатить неоплаченные наряды",
+                customer_payment_orders_path(customer_id: @record.id, paid: "no"),
+                class: "rounded bg-emerald-800 px-3 py-2 text-white" %>
+  <% else %>
+    <p class="text-slate-500">Все наряды этого заказчика отмечены как оплаченные.</p>
+  <% end %>
+</div>
+
+<div class="mb-8">
+  <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-lg font-semibold">Наряды</h2>
+    <%= link_to "Все оплаты заказчика", customer_payment_orders_path(customer_id: @record.id), class: "text-sm underline" %>
+  </div>
+  <table class="w-full border-collapse text-left text-sm">
+    <thead>
+      <tr class="border-b text-slate-500">
+        <th class="py-2 pr-3">№</th>
+        <th class="py-2 pr-3">Статус</th>
+        <th class="py-2 pr-3">Пациент</th>
+        <th class="py-2 pr-3">Врач</th>
+        <th class="py-2 pr-3">Оплата</th>
+        <th class="py-2 pr-3">Сумма оплаты</th>
+        <th class="py-2 pr-3">Срок</th>
+        <th class="py-2 pr-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @work_orders.empty? %>
+        <tr><td colspan="8" class="py-6 text-slate-500">Нарядов нет</td></tr>
+      <% else %>
+        <% @work_orders.each do |order| %>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-2 pr-3"><%= record_link("##{order.number}", work_order_path(order)) %></td>
+            <td class="py-2 pr-3"><%= work_order_status_badge(order) %></td>
+            <td class="py-2 pr-3"><%= order.patient&.full_name || "—" %></td>
+            <td class="py-2 pr-3"><%= order.doctor&.full_name || "—" %></td>
+            <td class="py-2 pr-3"><%= customer_paid_badge(order) %></td>
+            <td class="py-2 pr-3">
+              <% if order.customer_order_payment_amount.to_d.positive? %>
+                <%= number_to_currency(order.customer_order_payment_amount) %>
+                <% if order.customer_paid? %>
+                  · <%= order.customer_paid_at&.strftime("%d.%m.%Y") %>
+                <% end %>
+              <% else %>
+                —
+              <% end %>
+            </td>
+            <td class="py-2 pr-3"><%= order.due_at&.strftime("%d.%m.%Y") || "—" %></td>
+            <td class="py-2 pr-3 text-right space-x-2">
+              <%= open_record_link(work_order_path(order)) %>
+              <% unless order.customer_paid? %>
+                <%= link_to "Оплатить",
+                            customer_payment_orders_path(customer_id: @record.id, paid: "no"),
+                            class: "underline text-xs" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<div>
+  <h2 class="mb-3 text-lg font-semibold">Врачи</h2>
+  <p class="mb-3 text-sm text-slate-600">Заказчик без врачей и пациентов допустим (например, частный заказ модели).</p>
+  <table class="w-full border-collapse text-left text-sm">
+    <thead>
+      <tr class="border-b text-slate-500">
+        <th class="py-2 pr-3">ФИО</th>
+        <th class="py-2 pr-3">Пациентов</th>
+        <th class="py-2 pr-3">Активен</th>
+        <th class="py-2 pr-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @doctors.empty? %>
+        <tr><td colspan="4" class="py-6 text-slate-500">Врачей нет</td></tr>
+      <% else %>
+        <% @doctors.each do |doctor| %>
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="py-2 pr-3"><%= record_link(doctor.full_name, doctor_path(doctor)) %></td>
+            <td class="py-2 pr-3"><%= doctor.patients.size %></td>
+            <td class="py-2 pr-3"><%= doctor.active? ? "да" : "нет" %></td>
+            <td class="py-2 pr-3 text-right"><%= open_record_link(doctor_path(doctor)) %></td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+</div>
