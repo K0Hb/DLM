@@ -55,16 +55,6 @@ bin/rails test
    New-NetFirewallRule -DisplayName "DLM Rails 3000" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow -Profile Any
    ```
 
-### Как хостить на своем железе с доступом внутри локальной сети (Windows 11 + WSL2)
-
-Разово:
-
-1. `C:\Users\<Вы>\.wslconfig` → `networkingMode=mirrored`, `firewall=false`, затем `wsl --shutdown`
-2. PowerShell **от администратора:**
-   ```powershell
-   New-NetFirewallRule -DisplayName "DLM Rails 3000" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow -Profile Any
-   ```
-
 Запуск: `bin/rails s -b 0.0.0.0 -p 3000`
 
 - на этом ПК — http://localhost:3000
