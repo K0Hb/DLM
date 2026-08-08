@@ -1,0 +1,66 @@
+schema: spec-driven
+
+# Shown to AI when creating OpenSpec artifacts.
+context: |
+  Product: DLM (Dental Lab Manager) — web app for a dental technical laboratory.
+  Product requirements source of truth: /spec.md (Russian). Do not contradict it.
+  Implementation phases: /docs/AGENT_PLAN.md (P0–P8). One OpenSpec change per phase.
+  P0–P8 implemented (MVP + payments + catalog parties + UI polish). Product contract: /spec.md.
+  Reference domain PDF: ZTLHelp.pdf — glossary only; spec.md wins on conflicts.
+
+  Tech stack (locked):
+  - Ruby 3.3+, Rails 8, PostgreSQL
+  - UI: ERB + Hotwire/Turbo/Stimulus (no SPA-only React/Vue)
+  - Auth: Devise (email+password); Authorization: Pundit only
+  - Files: Active Storage Disk (Docker volume); no S3
+  - Deploy: Docker Compose (app + postgres); target client OS Windows (Docker Desktop) and Unix
+  - Locale: ru, currency ₽
+
+  Domain rules (summary):
+  - Roles: superadmin, admin, employee (one role per user)
+  - MVP focus: technician labor + payroll; customer payment = manual facts (customer_payment_amount + confirmation)
+  - WorkOrder: customer required; patient/doctor optional (P8); one patient max per order
+  - Customer payment amount ≠ sum of technician service lines; no auto-fill from services
+  - WorkOrderService: one assignee; assignee change only while assigned
+  - Odontogram: FDI + types/materials/shades in `config/odontogram.yml` (9 types, 7 materials); DentalDB-inspired SVG, not full exocad
+  - Layout: `.app-shell` max ~1600px; work order show two-column with odontogram sidebar
+  - Public QR page shows full content including money
+  - Status rollback allowed except from closed
+  - List UI: record_link + «Открыть»; services delete on show only
+
+  Do not implement out-of-scope items from spec.md §2 and §11.
+  Do not bulk-import all of spec.md into openspec/specs; grow specs via archived deltas per phase.
+
+  Testing (required from P1 onward):
+  - Main phase user scenarios MUST have automated coverage
+  - Prefer Rails system tests (Capybara + headless Chrome) for e2e UI flows
+  - Use integration tests for HTTP authz flows when sufficient
+  - Model/unit tests for domain rules; not a substitute for scenario tests
+  - A phase is not done until `bin/rails test` is green for that phase's scenarios
+
+rules:
+  proposal:
+    - Reference the AGENT_PLAN phase id (P0–P6) and relevant spec.md sections
+    - Include Non-goals mirroring spec out-of-scope for that phase
+    - Keep proposal concise; link to spec.md instead of copying long prose
+  specs:
+    - Write requirements as MUST/SHALL with concrete scenarios
+    - Prefer behavior over implementation detail unless design.md needs it
+  design:
+    - Stick to Rails 8 + Pundit + Devise + Disk storage conventions above
+    - Call out Docker volume / ENV for storage and optional HTTPS
+  tasks:
+    - Break into checkbox tasks ordered for a working vertical slice
+    - Map tasks to acceptance criteria from spec.md §10 for the phase
+    - Include explicit tasks for system and/or integration tests of main scenarios
+
+operations:
+  apply:
+    guidance:
+      - Follow docs/AGENT_PLAN.md phase boundaries; do not pull next phase scope
+      - Prefer Russian UI copy; English model/code names
+      - Ship system/integration tests for main scenarios before marking the phase done
+  archive:
+    guidance:
+      - Merge only what the phase actually shipped
+      - Leave product contract in /spec.md; openspec/specs hold behavioral deltas

@@ -1,0 +1,10 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+clinic:
+  name: Клиника Улыбка
+  phone: "+7 900 000-00-01"
+  active: true
+
+inactive_clinic:
+  name: Архив
+  active: false

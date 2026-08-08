@@ -1,0 +1,74 @@
+<% formula = Odontogram.normalize(@work_order.dental_formula) %>
+<div data-controller="odontogram"
+     data-odontogram-labels-value="<%= ERB::Util.html_escape(Odontogram.labels_map.to_json) %>"
+     data-odontogram-colors-value="<%= ERB::Util.html_escape(Odontogram.colors_map.to_json) %>"
+     data-odontogram-material-labels-value="<%= ERB::Util.html_escape(Odontogram.material_labels_map.to_json) %>"
+     class="odontogram-panel space-y-4">
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h2 class="odontogram-title">Зубная формула</h2>
+      <p class="odontogram-hint">Дуга в стиле DentalDB · FDI · клик выбирает зуб, Ctrl+клик копирует параметры</p>
+    </div>
+    <div class="flex flex-wrap items-end gap-3">
+      <div>
+        <label class="odontogram-label">Цвет (shade)</label>
+        <% current_shade = formula["shade"] || @work_order.tooth_color %>
+        <select data-odontogram-target="shade"
+                data-action="change->odontogram#sync"
+                class="odontogram-select">
+          <option value="">— не выбран —</option>
+          <% Odontogram.shade_options.each do |name, code| %>
+            <option value="<%= code %>" <%= "selected" if current_shade.to_s == code %>><%= name %></option>
+          <% end %>
+        </select>
+      </div>
+      <div>
+        <label class="odontogram-label">Тип активного зуба</label>
+        <select data-odontogram-target="typeSelect"
+                data-action="change->odontogram#applyParams"
+                class="odontogram-select">
+          <option value="">— не выбран —</option>
+          <% Odontogram.type_options.each do |name, code| %>
+            <option value="<%= code %>"><%= name %></option>
+          <% end %>
+        </select>
+      </div>
+      <div>
+        <label class="odontogram-label">Материал активного зуба</label>
+        <select data-odontogram-target="materialSelect"
+                data-action="change->odontogram#applyParams"
+                class="odontogram-select">
+          <option value="">— не выбран —</option>
+          <% Odontogram.material_options.each do |name, code| %>
+            <option value="<%= code %>"><%= name %></option>
+          <% end %>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="odontogram-legend">
+    <% Odontogram.types.each do |t| %>
+      <span class="odontogram-legend-item">
+        <span class="odontogram-legend-swatch" style="background: <%= t["color"] %>"></span>
+        <%= t["name"] %>
+      </span>
+    <% end %>
+  </div>
+
+  <div class="odontogram-stage">
+    <%= render "work_orders/odontogram_chart", formula: formula, readonly: false %>
+  </div>
+
+  <p class="odontogram-help lg:hidden">
+    На телефоне схему можно листать горизонтально.
+  </p>
+  <p class="odontogram-help hidden lg:block">
+    Повторный клик по активному зубу снимает выбор. Точки между соседними выбранными зубами — connectors (по умолчанию серые; клик → зелёный = соединение).
+  </p>
+
+  <div data-odontogram-target="summaryList" class="odontogram-summary"></div>
+
+  <%= f.hidden_field :dental_formula, value: formula.to_json, data: { odontogram_target: "input" } %>
+  <%= f.hidden_field :tooth_color, data: { odontogram_target: "toothColorField" }, value: formula["shade"] || @work_order.tooth_color %>
+</div>

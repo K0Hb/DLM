@@ -1,0 +1,66 @@
+<% order = @work_order %>
+
+<div class="mb-4 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold"><%= @line.service.name %></h1>
+    <p class="text-slate-600">Наряд #<%= order.number %> · статус строки: <%= service_line_status_badge(@line) %> · <%= technician_paid_badge(@line) %></p>
+  </div>
+  <%= link_to "К списку задач", my_tasks_path, class: "underline text-sm" %>
+</div>
+
+<div class="mb-6 grid gap-2 text-sm md:grid-cols-2 max-w-3xl">
+  <div>Заказчик: <%= order.customer.name %></div>
+  <div>Пациент: <%= order.patient&.full_name || "—" %></div>
+  <div>Срок: <%= order.due_at&.strftime("%d.%m.%Y %H:%M") || "—" %></div>
+  <div>Количество: <%= @line.quantity %></div>
+  <div>Ставка (snapshot): <%= number_to_currency(@line.technician_price_snapshot) %></div>
+  <div>Сумма строки: <%= number_to_currency(@line.amount) %></div>
+  <div class="md:col-span-2">
+    <div class="font-medium">Описание наряда</div>
+    <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= order.notes.presence || "—" %></div>
+  </div>
+</div>
+
+<div class="mb-6 flex flex-wrap gap-2 text-sm">
+  <% if @line.assigned? %>
+    <%= button_to "Взять в работу", start_my_task_path(@line), method: :post, class: "rounded bg-slate-900 px-3 py-2 text-white" %>
+  <% end %>
+  <% if @line.in_progress? %>
+    <%= button_to "Выполнено", complete_my_task_path(@line), method: :post, class: "rounded bg-emerald-700 px-3 py-2 text-white" %>
+  <% end %>
+  <% if @line.payout_eligible? && (@line.assignee_id == current_user.id || current_user.admin_or_superadmin?) %>
+    <% if @line.technician_paid? %>
+      <% if @line.payout_locked_for?(current_user) && !current_user.superadmin? %>
+        <span class="self-center text-xs text-slate-500">Оплату старше 30 дней менять нельзя</span>
+      <% else %>
+        <%= link_to "Снять «получил оплату»",
+                    new_technician_payment_path(work_order_service_ids: [ @line.id ], paid: false, return_to: my_task_path(@line)),
+                    class: "rounded border px-3 py-2" %>
+      <% end %>
+    <% else %>
+      <%= link_to "Я получил оплату",
+                  new_technician_payment_path(work_order_service_ids: [ @line.id ], paid: true, return_to: my_task_path(@line)),
+                  class: "rounded bg-emerald-800 px-3 py-2 text-white" %>
+    <% end %>
+  <% end %>
+</div>
+
+<%= render "shared/odontogram_readonly", work_order: order %>
+
+<div class="mb-8 max-w-3xl">
+  <h2 class="mb-3 text-lg font-semibold">Фото строки (до <%= WorkOrderService.photos_limit %>)</h2>
+  <% if @line.photos.attached? %>
+    <div class="mb-4">
+      <%= render "shared/photo_gallery",
+                 photos: @line.photos,
+                 purge_path_proc: ->(photo) { purge_photo_my_task_path(@line, photo_id: photo.id) } %>
+    </div>
+  <% end %>
+  <%= form_with url: attach_photos_my_task_path(@line), method: :post, multipart: true, class: "flex flex-wrap items-end gap-3 text-sm" do %>
+    <div>
+      <%= file_field_tag "work_order_service[photos][]", multiple: true, accept: "image/jpeg,image/png,image/webp", class: "block" %>
+      <p class="mt-1 text-xs text-slate-500">JPEG / PNG / WebP, до 10 МБ · клик по миниатюре — просмотр</p>
+    </div>
+    <%= submit_tag "Загрузить", class: "rounded bg-slate-800 px-3 py-2 text-white" %>
+  <% end %>
+</div>

@@ -1,0 +1,9 @@
+crown:
+  name: Коронка Zr
+  technician_price: 1500.00
+  active: true
+
+veneer:
+  name: Винир
+  technician_price: 2000.00
+  active: true

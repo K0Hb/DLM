@@ -1,0 +1,23 @@
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold">Отчёты</h1>
+  <p class="text-sm text-slate-600">Доступно admin / superadmin</p>
+</div>
+
+<ul class="max-w-xl space-y-3 text-sm">
+  <li class="rounded border bg-white px-4 py-3">
+    <%= link_to "Наряды за период", reports_work_orders_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-500">По дате создания; экспорт CSV</p>
+  </li>
+  <li class="rounded border bg-white px-4 py-3">
+    <%= link_to "Оплата труда техников", reports_payroll_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-500">Выполненные строки по периоду; переход к оплате неоплаченных по сотруднику</p>
+  </li>
+  <li class="rounded border bg-white px-4 py-3">
+    <%= link_to "Неоплаченные заказчиком (отчёт)", reports_unpaid_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-500">Read-only список нарядов без оплаты заказчиком</p>
+  </li>
+  <li class="rounded border bg-white px-4 py-3">
+    <%= link_to "Зафиксировать оплату заказчиков", customer_payment_orders_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-500">Рабочий экран: пакетная фиксация оплаты по заказчику</p>
+  </li>
+</ul>

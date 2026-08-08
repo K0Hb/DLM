@@ -1,0 +1,71 @@
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold">Неоплаченные заказчиком</h1>
+    <p class="text-sm text-slate-600">Отчёт: наряды без оплаты заказчиком</p>
+  </div>
+  <%= link_to "К отчётам", reports_path, class: "underline text-sm" %>
+</div>
+
+<%= form_with url: reports_unpaid_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="status">Статус</label>
+    <%= select_tag :status,
+                   options_for_select(work_order_status_options(include_blank: "Все"), params[:status]),
+                   id: "status",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="from">Создан с</label>
+    <%= date_field_tag :from, @from, id: "from", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="to">Создан по</label>
+    <%= date_field_tag :to, @to, id: "to", class: "rounded border px-2 py-1" %>
+  </div>
+  <%= submit_tag "Показать", class: "rounded bg-slate-800 px-3 py-1 text-white" %>
+<% end %>
+
+<table class="w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="border-b text-slate-500">
+      <th class="py-2 pr-3">№</th>
+      <th class="py-2 pr-3">Заказчик</th>
+      <th class="py-2 pr-3">Пациент</th>
+      <th class="py-2 pr-3">Создан</th>
+      <th class="py-2 pr-3">Статус</th>
+      <th class="py-2 pr-3">Срок</th>
+      <th class="py-2 pr-3">Сумма оплаты</th>
+      <th class="py-2 pr-3"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if @work_orders.empty? %>
+      <tr><td colspan="8" class="py-6 text-slate-500">Неоплаченных нарядов нет</td></tr>
+    <% else %>
+      <% @work_orders.group_by(&:customer).each do |customer, orders| %>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <td colspan="8" class="py-2 pr-3 font-medium"><%= customer.name %> · <%= orders.size %> наряд(ов)</td>
+        </tr>
+        <% orders.each do |order| %>
+          <tr class="border-b border-slate-100">
+            <td class="py-2 pr-3"><%= record_link("##{order.number}", work_order_path(order)) %></td>
+            <td class="py-2 pr-3"><%= order.customer.name %></td>
+            <td class="py-2 pr-3"><%= order.patient&.full_name || "—" %></td>
+            <td class="py-2 pr-3"><%= order.created_at.strftime("%d.%m.%Y") %></td>
+            <td class="py-2 pr-3"><%= work_order_status_badge(order) %></td>
+            <td class="py-2 pr-3"><%= order.due_at&.strftime("%d.%m.%Y") || "—" %></td>
+            <td class="py-2 pr-3"><%= number_to_currency(order.customer_payment_amount) %></td>
+            <td class="py-2 pr-3 text-right space-x-2">
+              <%= open_record_link(work_order_path(order)) %>
+              <% unless order.customer_paid? %>
+                <%= link_to "Оплатить",
+                            customer_payment_orders_path(customer_id: order.customer_id, paid: "no"),
+                            class: "underline text-xs" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>

@@ -1,0 +1,31 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+  <h1 class="text-2xl font-semibold">Врачи</h1>
+  <%= link_to "Добавить", new_doctor_path, class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+</div>
+
+<table class="w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="border-b border-slate-200 text-slate-500">
+      <th class="py-2 pr-3">ФИО</th>
+      <th class="py-2 pr-3">Заказчик</th>
+      <th class="py-2 pr-3">Пациентов</th>
+      <th class="py-2 pr-3">Нарядов</th>
+      <th class="py-2 pr-3">Активен</th>
+      <th class="py-2"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @records.each do |record| %>
+      <tr class="border-b border-slate-100 hover:bg-slate-50">
+        <td class="py-2 pr-3"><%= record_link(record.full_name, doctor_path(record)) %></td>
+        <td class="py-2 pr-3"><%= record.customer&.name || "—" %></td>
+        <td class="py-2 pr-3"><%= record.patients.size %></td>
+        <td class="py-2 pr-3"><%= record.work_orders.size %></td>
+        <td class="py-2 pr-3"><%= record.active? ? "да" : "нет" %></td>
+        <td class="py-2 pr-3 text-right">
+          <%= open_record_link(doctor_path(record)) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

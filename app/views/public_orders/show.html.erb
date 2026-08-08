@@ -1,0 +1,70 @@
+<div class="space-y-6">
+  <div>
+    <p class="text-sm text-slate-500">Публичный просмотр наряда</p>
+    <h1 class="text-2xl font-semibold">Наряд №<%= @work_order.number %></h1>
+    <p class="text-slate-600">Статус: <%= work_order_status_badge(@work_order) %></p>
+  </div>
+
+  <div class="grid gap-2 text-sm md:grid-cols-2">
+    <div>Заказчик: <%= @work_order.customer.name %></div>
+    <div>Пациент: <%= @work_order.patient&.full_name || "—" %></div>
+    <div>Врач: <%= @work_order.doctor&.full_name || "—" %></div>
+    <div>Срок: <%= @work_order.due_at&.strftime("%d.%m.%Y %H:%M") || "—" %></div>
+    <div>Оплата: <%= @work_order.customer_paid? ? "#{number_to_currency(@work_order.customer_paid_amount)} (#{@work_order.customer_paid_at&.strftime("%d.%m.%Y")})" : "не оплачен" %></div>
+    <div>Цвет зубов: <%= Odontogram.shade_label_for(@work_order.dental_formula["shade"] || @work_order.tooth_color).presence || "—" %></div>
+    <div class="md:col-span-2">
+      <div class="font-medium">Описание</div>
+      <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= @work_order.notes.presence || "—" %></div>
+    </div>
+  </div>
+
+  <%= render "shared/odontogram_readonly", work_order: @work_order %>
+
+  <div>
+    <h2 class="mb-3 text-lg font-semibold">Услуги</h2>
+    <table class="w-full border-collapse text-left text-sm">
+      <thead>
+        <tr class="border-b text-slate-500">
+          <th class="py-2 pr-2">Услуга</th>
+          <th class="py-2 pr-2">Исполнитель</th>
+          <th class="py-2 pr-2">Кол-во</th>
+          <th class="py-2 pr-2">Ставка</th>
+          <th class="py-2 pr-2">Сумма</th>
+          <th class="py-2 pr-2">Статус</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @work_order.work_order_services.each do |line| %>
+          <tr class="border-b">
+            <td class="py-2 pr-2"><%= line.service.name %></td>
+            <td class="py-2 pr-2"><%= line.assignee.full_name %></td>
+            <td class="py-2 pr-2"><%= line.quantity %></td>
+            <td class="py-2 pr-2"><%= number_to_currency(line.technician_price_snapshot) %></td>
+            <td class="py-2 pr-2"><%= number_to_currency(line.amount) %></td>
+            <td class="py-2 pr-2"><%= service_line_status_badge(line) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @work_order.photos.attached? %>
+    <div>
+      <h2 class="mb-3 text-lg font-semibold">Фото наряда</h2>
+      <%= render "shared/photo_gallery_readonly", photos: @work_order.photos %>
+    </div>
+  <% end %>
+
+  <% line_photos = @work_order.work_order_services.select { |l| l.photos.attached? } %>
+  <% if line_photos.any? %>
+    <div class="space-y-4">
+      <h2 class="text-lg font-semibold">Фото по услугам</h2>
+      <% line_photos.each do |line| %>
+        <div>
+          <h3 class="mb-2 text-sm font-medium"><%= line.service.name %></h3>
+          <%= render "shared/photo_gallery_readonly", photos: line.photos %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

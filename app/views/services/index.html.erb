@@ -1,0 +1,11 @@
+<%= render "shared/catalog_index",
+           title: "Услуги",
+           records: @records,
+           new_path: new_service_path,
+           show_path: ->(record) { service_path(record) },
+           allow_delete: false,
+           columns: [
+             [ "Название", ->(r) { r.name } ],
+             [ "Ставка технику", ->(r) { number_to_currency(r.technician_price) } ],
+             [ "Активна", ->(r) { r.active? ? "да" : "нет" } ]
+           ] %>

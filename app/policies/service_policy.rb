@@ -1,0 +1,2 @@
+class ServicePolicy < CatalogPolicy
+end

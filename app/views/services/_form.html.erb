@@ -1,0 +1,25 @@
+<h1 class="mb-6 text-2xl font-semibold"><%= @record.persisted? ? "Изменить услугу" : "Новая услуга" %></h1>
+<%= form_with model: @record, class: "max-w-lg space-y-4" do |f| %>
+  <% if @record.errors.any? %>
+    <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+      <ul class="list-disc pl-4"><% @record.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+  <div>
+    <%= f.label :name, "Название", class: "block text-sm font-medium" %>
+    <%= f.text_field :name, required: true, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= f.label :description, "Описание", class: "block text-sm font-medium" %>
+    <%= f.text_area :description, rows: 3, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= f.label :technician_price, "Ставка технику (₽)", class: "block text-sm font-medium" %>
+    <%= f.number_field :technician_price, step: 0.01, min: 0, required: true, class: "mt-1 w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div class="flex items-center gap-2"><%= f.check_box :active %><%= f.label :active, "Активна" %></div>
+  <div class="flex gap-3">
+    <%= f.submit "Сохранить", class: "rounded bg-slate-900 px-4 py-2 text-sm text-white" %>
+    <%= link_to "Отмена", @record.persisted? ? service_path(@record) : services_path, class: "underline text-sm" %>
+  </div>
+<% end %>

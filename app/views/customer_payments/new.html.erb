@@ -1,0 +1,95 @@
+<div class="mb-6 max-w-3xl">
+  <h1 class="text-2xl font-semibold"><%= @paid ? "Подтверждение оплаты заказчиком" : "Снятие оплаты заказчиком" %></h1>
+  <p class="mt-1 text-sm text-slate-600">
+    Наряд оплачивается только целиком. Отметьте галочками нужные наряды и подтвердите.
+    <% if @paid %>
+      Сумму оплаты укажите вручную для каждого отмеченного наряда.
+    <% end %>
+  </p>
+</div>
+
+<%= form_with url: customer_payment_path, method: :post,
+              class: "max-w-3xl space-y-4 text-sm",
+              data: { controller: "payment-line-select" } do %>
+  <%= hidden_field_tag :paid, @paid %>
+  <%= hidden_field_tag :return_to, @return_to %>
+
+  <div class="flex flex-wrap gap-3">
+    <button type="button" data-action="payment-line-select#checkAll" class="underline">Отметить все</button>
+    <button type="button" data-action="payment-line-select#uncheckAll" class="underline">Снять все</button>
+  </div>
+
+  <table class="w-full border-collapse text-left">
+    <thead>
+      <tr class="border-b text-slate-500">
+        <th class="py-2 pr-2 w-10"></th>
+        <th class="py-2 pr-2">Наряд</th>
+        <th class="py-2 pr-2">Заказчик</th>
+        <th class="py-2 pr-2">Пациент</th>
+        <th class="py-2 pr-2">Статус</th>
+        <th class="py-2 pr-2">Сумма услуг</th>
+        <% if @paid %>
+          <th class="py-2 pr-2">Сумма оплаты</th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @orders.each do |order| %>
+        <tr class="border-b">
+          <td class="py-2 pr-2">
+            <%= check_box_tag "work_order_ids[]",
+                              order.id,
+                              false,
+                              id: "cp_#{order.id}",
+                              data: {
+                                payment_line_select_target: "line",
+                                action: "change->payment-line-select#recalc"
+                              } %>
+          </td>
+          <td class="py-2 pr-2"><label for="cp_<%= order.id %>">#<%= order.number %></label></td>
+          <td class="py-2 pr-2"><%= order.customer.name %></td>
+          <td class="py-2 pr-2"><%= order.patient&.full_name || "—" %></td>
+          <td class="py-2 pr-2"><%= work_order_status_badge(order) %></td>
+          <td class="py-2 pr-2"><%= number_to_currency(order.services_total_amount) %></td>
+          <% if @paid %>
+            <td class="py-2 pr-2">
+              <% default_amount = order.customer_payment_amount.to_d.positive? ? order.customer_payment_amount : nil %>
+              <%= number_field_tag "amounts[#{order.id}]",
+                                   default_amount,
+                                   step: 0.01,
+                                   min: 0.01,
+                                   class: "w-28 rounded border px-2 py-1",
+                                   data: {
+                                     payment_line_select_target: "amountInput",
+                                     action: "input->payment-line-select#recalc change->payment-line-select#recalc"
+                                   } %>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <% if @paid %>
+    <p class="font-medium">
+      Итого сумма оплаты по отмеченным:
+      <span data-payment-line-select-target="total"><%= number_to_currency(0) %></span>
+    </p>
+  <% end %>
+
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="paid_at">Дата <%= @paid ? "оплаты" : "операции" %></label>
+    <%= datetime_local_field_tag :paid_at, @paid_at.strftime("%Y-%m-%dT%H:%M"), id: "paid_at", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="note">Комментарий (необязательно)</label>
+    <%= text_area_tag :note, @note, id: "note", rows: 2, class: "w-full rounded border px-2 py-1" %>
+  </div>
+
+  <div class="flex flex-wrap gap-3">
+    <%= submit_tag "Подтвердить",
+                   class: "rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-40",
+                   data: { payment_line_select_target: "submit" } %>
+    <%= link_to "Отмена", @cancel_path, class: "underline self-center" %>
+  </div>
+<% end %>

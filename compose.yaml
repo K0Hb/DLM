@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: dlm
+      POSTGRES_PASSWORD: dlm
+      POSTGRES_DB: dlm_production
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dlm -d dlm_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    ports:
+      - "3000:80"
+    environment:
+      RAILS_ENV: production
+      POSTGRES_HOST: db
+      POSTGRES_USER: dlm
+      POSTGRES_PASSWORD: dlm
+      POSTGRES_DB: dlm_production
+      DATABASE_URL: postgres://dlm:dlm@db:5432/dlm_production
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-please_change_me_to_a_long_random_string_at_least_64_chars_xxxxxxxx}
+      FORCE_SSL: ${FORCE_SSL:-false}
+      ASSUME_SSL: ${ASSUME_SSL:-false}
+      ACTIVE_STORAGE_ROOT: /rails/storage
+      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-admin@example.com}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-changeme123}
+      SUPERADMIN_FULL_NAME: ${SUPERADMIN_FULL_NAME:-Super Admin}
+    volumes:
+      - storage_data:/rails/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  storage_data:

@@ -1,0 +1,48 @@
+<div class="grid gap-4 md:grid-cols-2 max-w-3xl" data-controller="patient-doctor">
+  <div>
+    <%= f.label :customer_id, "Заказчик", class: "block text-sm font-medium" %>
+    <%= f.collection_select :customer_id, @customers, :id, :name, {}, class: "mt-1 w-full rounded border px-3 py-2", required: true %>
+  </div>
+  <div>
+    <%= f.label :doctor_id, "Врач (опционально)", class: "block text-sm font-medium" %>
+    <%= f.collection_select :doctor_id, @doctors, :id, :full_name,
+                            { include_blank: "—" },
+                            {
+                              class: "mt-1 w-full rounded border px-3 py-2",
+                              data: { patient_doctor_target: "doctor" }
+                            } %>
+    <p class="mt-1 text-xs text-slate-500">Нужен, если создаёте нового пациента ниже. При выборе пациента из справочника подставится автоматически.</p>
+  </div>
+  <div class="space-y-2 md:col-span-2">
+    <div>
+      <%= f.label :patient_id, "Пациент (опционально)", class: "block text-sm font-medium" %>
+      <select name="work_order[patient_id]"
+              id="work_order_patient_id"
+              class="mt-1 w-full rounded border px-3 py-2"
+              data-patient-doctor-target="patient"
+              data-action="change->patient-doctor#fill">
+        <option value=""><%= "— без пациента —" %></option>
+        <% @patients.each do |patient| %>
+          <option value="<%= patient.id %>"
+                  data-doctor-id="<%= patient.doctor_id %>"
+                  <%= "selected" if f.object.patient_id == patient.id %>>
+            <%= patient.full_name %><% if patient.doctor %> · <%= patient.doctor.full_name %><% end %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+    <div>
+      <%= label_tag :new_patient_full_name, "Или новый пациент (ФИО)", class: "block text-sm font-medium" %>
+      <%= text_field_tag :new_patient_full_name, params[:new_patient_full_name], class: "mt-1 w-full rounded border px-3 py-2", placeholder: "Иванов Иван Иванович" %>
+      <p class="mt-1 text-xs text-slate-500">Создаётся только вместе с выбранным врачом выше.</p>
+    </div>
+  </div>
+  <div>
+    <%= f.label :due_at, "Срок", class: "block text-sm font-medium" %>
+    <%= f.datetime_local_field :due_at, class: "mt-1 w-full rounded border px-3 py-2" %>
+  </div>
+  <div class="md:col-span-2">
+    <%= f.label :notes, "Описание", class: "block text-sm font-medium" %>
+    <%= f.text_area :notes, rows: 3, class: "mt-1 w-full rounded border px-3 py-2" %>
+  </div>
+</div>

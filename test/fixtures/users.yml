@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+superadmin:
+  email: superadmin@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  full_name: Super Admin
+  role: superadmin
+  active: true
+
+admin:
+  email: admin@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  full_name: Lab Admin
+  role: admin
+  active: true
+
+employee:
+  email: employee@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  full_name: Tech Employee
+  role: employee
+  active: true
+
+inactive:
+  email: inactive@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  full_name: Inactive User
+  role: employee
+  active: false

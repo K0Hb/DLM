@@ -1,0 +1,37 @@
+<h1 class="mb-6 text-2xl font-semibold"><%= @work_order.persisted? ? "Наряд ##{@work_order.number}" : "Новый наряд" %></h1>
+
+<%= form_with model: @work_order, class: "space-y-6" do |f| %>
+  <% if @work_order.errors.any? %>
+    <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+      <ul class="list-disc pl-4"><% @work_order.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <%= render "patient_and_header_fields", f: f %>
+
+  <%= render "odontogram_fields", f: f %>
+
+  <% if @work_order.persisted? && !@work_order.customer_paid? %>
+    <div class="grid gap-4 md:grid-cols-2 max-w-3xl border-t pt-4">
+      <div>
+        <%= f.label :customer_payment_amount, "Сумма к оплате заказчиком (₽)", class: "block text-sm font-medium" %>
+        <%= f.number_field :customer_payment_amount, step: 0.01, min: 0, class: "mt-1 w-full rounded border px-3 py-2" %>
+        <p class="mt-1 text-xs text-slate-500">Факт оплаты фиксируется на карточке наряда через «Оплатить заказчиком».</p>
+      </div>
+    </div>
+  <% elsif @work_order.persisted? && @work_order.customer_paid? %>
+    <div class="max-w-3xl border-t pt-4 text-sm text-slate-600">
+      <p>
+        Оплата заказчиком:
+        <%= number_to_currency(@work_order.customer_paid_amount) %>
+        (<%= @work_order.customer_paid_at&.strftime("%d.%m.%Y %H:%M") || "—" %>).
+        Изменить сумму или снять оплату можно только через подтверждение на карточке наряда.
+      </p>
+    </div>
+  <% end %>
+
+  <div class="flex gap-3">
+    <%= f.submit "Сохранить", class: "rounded bg-slate-900 px-4 py-2 text-sm text-white" %>
+    <%= link_to "Отмена", @work_order.persisted? ? work_order_path(@work_order) : work_orders_path, class: "underline text-sm" %>
+  </div>
+<% end %>

@@ -1,0 +1,22 @@
+ru:
+  devise:
+    sessions:
+      signed_in: "Вы вошли в систему."
+      signed_out: "Вы вышли из системы."
+      already_signed_in: "Вы уже вошли в систему."
+    failure:
+      unauthenticated: "Чтобы продолжить, войдите в систему."
+      invalid: "Неверный email или пароль."
+      inactive: "Учётная запись отключена."
+      not_found_in_database: "Неверный email или пароль."
+      timeout: "Сессия истекла. Войдите снова."
+    passwords:
+      send_instructions: "Инструкции по сбросу пароля отправлены на email."
+      updated: "Пароль изменён."
+  errors:
+    messages:
+      not_saved:
+        one: "%{count} ошибка не позволяет сохранить %{resource}:"
+        few: "%{count} ошибки не позволяют сохранить %{resource}:"
+        many: "%{count} ошибок не позволяют сохранить %{resource}:"
+        other: "%{count} ошибки не позволяют сохранить %{resource}:"

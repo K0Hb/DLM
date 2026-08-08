@@ -1,0 +1,38 @@
+<%# locals: title, records, columns (array of [label, callable]), new_path, show_path: optional callable(record) %>
+<div class="mb-6 flex items-center justify-between gap-4">
+  <h1 class="text-2xl font-semibold"><%= title %></h1>
+  <%= link_to "Добавить", new_path, class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+</div>
+
+<table class="w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="border-b border-slate-200 text-slate-500">
+      <% columns.each do |label, _| %>
+        <th class="py-2 pr-3"><%= label %></th>
+      <% end %>
+      <th class="py-2"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% records.each do |record| %>
+      <% open_path = local_assigns[:show_path] ? show_path.call(record) : [:edit, record] %>
+      <tr class="border-b border-slate-100 hover:bg-slate-50">
+        <% columns.each_with_index do |(_, getter), idx| %>
+          <td class="py-2 pr-3">
+            <% if idx.zero? %>
+              <%= record_link(getter.call(record), open_path) %>
+            <% else %>
+              <%= getter.call(record) %>
+            <% end %>
+          </td>
+        <% end %>
+        <td class="py-2 pr-3 text-right space-x-2">
+          <%= open_record_link(open_path) %>
+          <% if local_assigns.fetch(:allow_delete, true) %>
+            <%= button_to "Удалить", record, method: :delete, form: { data: { turbo_confirm: "Удалить?" }, class: "inline" }, class: "underline text-xs text-red-700" %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

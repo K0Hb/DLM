@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <title><%= content_for(:title) || "DLM — Dental Lab Manager" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <% if user_signed_in? %>
+      <header class="border-b border-slate-200 bg-white">
+        <div class="app-shell flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <%= link_to "DLM", root_path, class: "font-semibold tracking-tight" %>
+            <% if current_user.employee? %>
+              <%= link_to "Мои задачи", my_tasks_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Журналы", payment_events_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+            <% elsif current_user.admin_or_superadmin? %>
+              <%= link_to "Оплаты сотрудникам", technician_payouts_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Оплаты заказчиков", customer_payment_orders_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Журналы", payment_events_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+            <% end %>
+            <% if current_user.admin_or_superadmin? %>
+              <%= link_to "Наряды", work_orders_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Доставка", deliveries_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Отчёты", reports_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Заказчики", customers_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Врачи", doctors_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Пациенты", patients_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Услуги", services_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+              <%= link_to "Пул услуг", employee_skills_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+            <% end %>
+            <% if policy(User).index? %>
+              <%= link_to "Пользователи", users_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
+            <% end %>
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-600">
+            <span><%= current_user.full_name %> (<%= user_role_label(current_user.role) %>)</span>
+            <%= button_to "Выйти", destroy_user_session_path, method: :delete, class: "text-slate-900 underline" %>
+          </div>
+        </div>
+      </header>
+    <% end %>
+
+    <div class="app-shell py-6">
+      <% if notice.present? %>
+        <p class="mb-4 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"><%= notice %></p>
+      <% end %>
+      <% if alert.present? %>
+        <p class="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"><%= alert %></p>
+      <% end %>
+
+      <main>
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>
