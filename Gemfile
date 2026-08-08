@@ -22,7 +22,7 @@ gem "tailwindcss-rails"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # (Devise depends on bcrypt)
 gem "bcrypt", "~> 3.1.22"
-gem "devise", "~> 4.9"
+gem "devise", "~> 5.0"
 gem "pundit", "~> 2.4"
 gem "rqrcode", "~> 3.2"
 
