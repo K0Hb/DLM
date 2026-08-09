@@ -240,3 +240,290 @@
 .photo-lightbox::backdrop {
   background: rgba(15, 23, 42, 0.72);
 }
+
+/* Browser print — one A4 lab sheet */
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  header,
+  .no-print,
+  .flash-notice,
+  .flash-alert {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #0f172a !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  .app-shell {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  /* Sheet: title+meta left of QR, notes full-width under them, then formula/services */
+  .work-order-print-sheet {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "title qr"
+      "meta  qr"
+      "notes notes"
+      "formula formula"
+      "services services" !important;
+    column-gap: 16px !important;
+    row-gap: 8px !important;
+    align-items: start !important;
+  }
+
+  .work-order-print-header {
+    display: contents !important;
+  }
+
+  .work-order-print-qr-wrap {
+    display: contents !important;
+  }
+
+  .work-order-print-title {
+    grid-area: title !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .work-order-print-header h1 {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    margin: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .work-order-status-print {
+    margin: 6px 0 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .work-order-print-grid {
+    display: contents !important;
+  }
+
+  .work-order-print-main {
+    display: contents !important;
+  }
+
+  .work-order-print-meta {
+    grid-area: meta !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 3px 14px !important;
+    font-size: 11px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    align-self: start !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .work-order-print-meta > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .work-order-print-meta .md\:col-span-2 {
+    grid-column: 1 / -1 !important;
+    margin-top: 4px !important;
+  }
+
+  .work-order-print-notes {
+    grid-area: notes !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    font-size: 11px !important;
+    padding-top: 2px !important;
+    border-top: 1px solid #e2e8f0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .work-order-print-notes .whitespace-pre-wrap {
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .work-order-qr--print {
+    grid-area: qr !important;
+    overflow: visible !important;
+    break-inside: avoid;
+    background: #fff !important;
+    border-color: #cbd5e1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    align-self: start !important;
+    justify-self: end !important;
+    z-index: 1 !important;
+  }
+
+  .work-order-qr--print svg {
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    display: block;
+  }
+
+  .work-order-print-side {
+    grid-area: formula !important;
+    margin: 0 !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding-top: 6px !important;
+    border-top: 1px solid #cbd5e1 !important;
+  }
+
+  .work-order-print-services {
+    grid-area: services !important;
+  }
+
+  .work-order-print-services h2 {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    margin: 0 0 6px !important;
+    color: #334155 !important;
+  }
+
+  /* Odontogram as the visual center — full width */
+  .odontogram-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    break-inside: avoid;
+    box-shadow: none !important;
+    padding: 8px 10px !important;
+    border-radius: 6px !important;
+    border-color: #94a3b8 !important;
+    max-width: none !important;
+    width: 100% !important;
+    background: #fff !important;
+  }
+
+  .odontogram-panel > .mb-3 {
+    margin: 0 !important;
+    order: 0 !important;
+  }
+
+  .odontogram-hint {
+    display: none !important;
+  }
+
+  .odontogram-legend {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px 8px !important;
+    margin: 0 0 4px !important;
+    order: 1 !important;
+  }
+
+  .odontogram-legend-item {
+    font-size: 8px !important;
+    padding: 1px 5px !important;
+  }
+
+  .odontogram-title {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+  }
+
+  .odontogram-stage {
+    order: 2 !important;
+    border-radius: 6px !important;
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .odontogram-svg,
+  .odontogram-svg--readonly {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: auto !important;
+  }
+
+  .odontogram-summary {
+    order: 3 !important;
+    padding-top: 6px !important;
+    margin: 0 !important;
+    border-top: 1px solid #e2e8f0 !important;
+  }
+
+  .odontogram-summary-title {
+    font-size: 10px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .odontogram-summary-row {
+    padding: 2px 0 !important;
+    font-size: 10px !important;
+    gap: 0.35rem !important;
+  }
+
+  .odontogram-summary--first-mobile {
+    border: 0 !important;
+    padding: 6px 0 0 !important;
+    margin: 0 !important;
+  }
+
+  table {
+    font-size: 10px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  th,
+  td {
+    padding: 4px 6px !important;
+  }
+
+  th {
+    font-size: 9px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+    color: #64748b !important;
+  }
+
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+}

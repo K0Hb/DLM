@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_07_100000) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_09_181430) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -137,7 +137,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_07_100000) do
     t.boolean "technician_paid", default: false, null: false
     t.datetime "technician_paid_at"
     t.bigint "technician_paid_by_id"
+    t.datetime "removed_at"
+    t.bigint "removed_by_id"
     t.index ["assignee_id"], name: "index_work_order_services_on_assignee_id"
+    t.index ["removed_at"], name: "index_work_order_services_on_removed_at"
+    t.index ["removed_by_id"], name: "index_work_order_services_on_removed_by_id"
     t.index ["service_id"], name: "index_work_order_services_on_service_id"
     t.index ["status"], name: "index_work_order_services_on_status"
     t.index ["technician_paid"], name: "index_work_order_services_on_technician_paid"
@@ -187,6 +191,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_07_100000) do
   add_foreign_key "services_users", "users"
   add_foreign_key "work_order_services", "services"
   add_foreign_key "work_order_services", "users", column: "assignee_id"
+  add_foreign_key "work_order_services", "users", column: "removed_by_id"
   add_foreign_key "work_order_services", "users", column: "technician_paid_by_id"
   add_foreign_key "work_order_services", "work_orders"
   add_foreign_key "work_orders", "customers"

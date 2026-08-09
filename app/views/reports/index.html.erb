@@ -1,23 +1,44 @@
 <div class="mb-6">
   <h1 class="text-2xl font-semibold">Отчёты</h1>
-  <p class="text-sm text-slate-600">Доступно admin / superadmin</p>
+  <p class="text-sm text-slate-600">Сводки для контроля лаборатории. Отметить оплату или выплату — в меню сверху («Оплаты заказчиков» / «Оплаты сотрудникам»).</p>
 </div>
 
-<ul class="max-w-xl space-y-3 text-sm">
+<ul class="max-w-2xl space-y-3 text-sm">
   <li class="rounded border bg-white px-4 py-3">
-    <%= link_to "Наряды за период", reports_work_orders_path, class: "font-medium underline" %>
-    <p class="mt-1 text-slate-500">По дате создания; экспорт CSV</p>
+    <%= link_to "Список нарядов за период", reports_work_orders_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-600">
+      Наряды по дате создания: статус, заказчик, оплата. Можно выгрузить таблицу в файл.
+    </p>
   </li>
   <li class="rounded border bg-white px-4 py-3">
-    <%= link_to "Оплата труда техников", reports_payroll_path, class: "font-medium underline" %>
-    <p class="mt-1 text-slate-500">Выполненные строки по периоду; переход к оплате неоплаченных по сотруднику</p>
+    <%= link_to "Начисления сотрудникам", reports_payroll_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-600">
+      Сколько заработали техники за период по выполненным услугам. Фильтры: сотрудник, выплата, услуга.
+    </p>
   </li>
   <li class="rounded border bg-white px-4 py-3">
-    <%= link_to "Неоплаченные заказчиком (отчёт)", reports_unpaid_path, class: "font-medium underline" %>
-    <p class="mt-1 text-slate-500">Read-only список нарядов без оплаты заказчиком</p>
+    <%= link_to "Долги заказчиков", reports_unpaid_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-600">
+      Кто ещё не заплатил. Зафиксировать оплату —
+      <%= link_to "Оплаты заказчиков", customer_payment_orders_path, class: "underline" %>.
+    </p>
   </li>
   <li class="rounded border bg-white px-4 py-3">
-    <%= link_to "Зафиксировать оплату заказчиков", customer_payment_orders_path, class: "font-medium underline" %>
-    <p class="mt-1 text-slate-500">Рабочий экран: пакетная фиксация оплаты по заказчику</p>
+    <%= link_to "Воронка и задачи на руках", reports_funnel_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-600">
+      Сколько нарядов в каждом статусе прямо сейчас и какие услуги сейчас у исполнителей.
+    </p>
+  </li>
+  <li class="rounded border bg-white px-4 py-3">
+    <%= link_to "По заказчикам за период", reports_customers_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-600">
+      Сколько нарядов у каждой клиники за период, сколько уже оплатили и сколько должны.
+    </p>
+  </li>
+  <li class="rounded border bg-white px-4 py-3">
+    <%= link_to "По услугам за период", reports_services_path, class: "font-medium underline" %>
+    <p class="mt-1 text-slate-600">
+      Какие услуги чаще выполняли и на какую сумму начислили техникам.
+    </p>
   </li>
 </ul>

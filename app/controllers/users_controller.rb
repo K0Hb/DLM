@@ -3,14 +3,17 @@ class UsersController < ApplicationController
 
   def index
     authorize User
-    @users = policy_scope(User).order(:email)
+    @users = paginate(policy_scope(User).order(:email))
   end
 
   def show
     authorize @user
     all_lines = @user.assigned_work_order_services
     @status_counts = WorkOrderService::STATUSES.index_with { |status| all_lines.where(status: status).count }
-    @pool_services = @user.services.order(:name) if @user.employee?
+    if @user.employee?
+      @pool_services = @user.services.order(:name)
+      @services = Service.order(:name) if policy(@user).update?
+    end
 
     scope = all_lines.includes(:service, work_order: %i[patient customer])
     scope = scope.where(status: params[:status]) if params[:status].present?
@@ -20,7 +23,7 @@ class UsersController < ApplicationController
     @completed_sum = scope.where(status: "completed").sum(Arel.sql("quantity * technician_price_snapshot"))
     @paid_sum = scope.where(technician_paid: true).sum(Arel.sql("quantity * technician_price_snapshot"))
     @unpaid_sum = scope.where(technician_paid: false).sum(Arel.sql("quantity * technician_price_snapshot"))
-    @lines = scope.order(updated_at: :desc)
+    @lines = paginate(scope.order(updated_at: :desc))
   end
 
   def new
@@ -33,7 +36,7 @@ class UsersController < ApplicationController
     authorize @user
 
     if @user.save
-      redirect_to users_path, notice: "Пользователь создан."
+      redirect_to @user, notice: "Пользователь создан."
     else
       render :new, status: :unprocessable_entity
     end
@@ -45,13 +48,15 @@ class UsersController < ApplicationController
 
   def update
     authorize @user
+    return update_service_pool if params[:service_pool].present?
+
     attrs = user_params
     if attrs[:password].blank?
       attrs = attrs.except(:password, :password_confirmation)
     end
 
     if @user.update(attrs)
-      redirect_to users_path, notice: "Пользователь обновлён."
+      redirect_to @user, notice: "Пользователь обновлён."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -61,6 +66,17 @@ class UsersController < ApplicationController
 
   def set_user
     @user = User.find(params[:id])
+  end
+
+  def update_service_pool
+    unless @user.employee?
+      redirect_to @user, alert: "Пул услуг доступен только для сотрудников."
+      return
+    end
+
+    service_ids = Array(params.dig(:user, :service_ids)).reject(&:blank?)
+    @user.service_ids = service_ids
+    redirect_to @user, notice: "Пул услуг обновлён."
   end
 
   def user_params

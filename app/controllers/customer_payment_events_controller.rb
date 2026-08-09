@@ -12,7 +12,7 @@ class CustomerPaymentEventsController < ApplicationController
     to = parse_date(params[:to])
     scope = scope.where("payment_events.created_at >= ?", from.beginning_of_day) if from
     scope = scope.where("payment_events.created_at <= ?", to.end_of_day) if to
-    @events = scope.order(created_at: :desc).limit(200)
+    @events = paginate(scope.order(created_at: :desc))
     @customers = Customer.where(active: true).order(:name)
   end
 

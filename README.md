@@ -17,18 +17,29 @@
 - Делится нарядом по **ссылке или QR** — клиника видит статус и состав без входа в систему
 - Разделяет доступ: администратор ведёт лабораторию, сотрудник — только свою работу
 
-## Запуск
+## Стек
 
-**Docker (основной способ):**
+- Ruby 3.4.4 (`.ruby-version`)
+- Rails 8.0
+- PostgreSQL 16
+- Hotwire (Turbo, Stimulus), importmap
+- Tailwind CSS (`tailwindcss-rails`)
+- Devise, Pundit, Active Storage (Disk), rqrcode
+- Docker Compose
+
+## Быстрый старт
+
+### Docker
 
 ```bash
 cp .env.example .env
 docker compose up --build
 ```
 
-http://localhost:3000 — seed: `admin@example.com` / `changeme123` (смените пароль).
+Приложение: http://localhost:3000
+Учётная запись после seed: `admin@example.com` / `changeme123`.
 
-**Разработка в WSL (app локально, БД в Docker):**
+### Локально
 
 ```bash
 cp .env.example .env
@@ -38,6 +49,26 @@ bin/rails db:prepare db:seed
 bin/rails s -b 0.0.0.0 -p 3000   # или bin/dev
 ```
 
+## Хранение файлов
+
+Загрузки идут в Active Storage (Disk).
+
+| Режим | Каталог | Переменная |
+|---|---|---|
+| Docker Compose | путь на хосте → `/rails/storage` | `HOST_STORAGE_PATH` (по умолчанию `./storage`) |
+| Локальный сервер | каталог приложения | `ACTIVE_STORAGE_ROOT` (по умолчанию `storage/`) |
+
+После смены пути перезапустите процесс приложения.
+
+## Резервное копирование
+
+```bash
+bin/backup
+KEEP_BACKUPS=8 bin/backup
+```
+
+Дамп PostgreSQL сохраняется в `backups/<метка>/`. Примеры cron и восстановления — в шапке `bin/backup`.
+
 ## Тесты
 
 ```bash
@@ -45,7 +76,7 @@ export POSTGRES_HOST=localhost POSTGRES_USER=dlm POSTGRES_PASSWORD=dlm
 bin/rails test
 ```
 
-### Как хостить на своем железе с доступом внутри локальной сети (Windows 11 + WSL2)
+## Доступ из локальной сети (Windows 11 + WSL2)
 
 Разово:
 

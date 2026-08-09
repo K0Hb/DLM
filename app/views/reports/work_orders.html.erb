@@ -1,9 +1,9 @@
 <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
   <div>
-    <h1 class="text-2xl font-semibold">Наряды за период</h1>
-    <p class="text-sm text-slate-600">Фильтр по дате создания</p>
+    <h1 class="text-2xl font-semibold">Список нарядов за период</h1>
+    <p class="text-sm text-slate-600">По дате создания наряда. Выгрузка учитывает те же фильтры.</p>
   </div>
-  <%= link_to "К отчётам", reports_path, class: "underline text-sm" %>
+  <%= link_to "Ко всем отчётам", reports_path, class: "underline text-sm" %>
 </div>
 
 <%= form_with url: reports_work_orders_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
@@ -15,8 +15,32 @@
     <label class="mb-1 block text-xs text-slate-500" for="to">По</label>
     <%= date_field_tag :to, @to, id: "to", class: "rounded border px-2 py-1" %>
   </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="status">Статус</label>
+    <%= select_tag :status,
+                   options_for_select(work_order_status_options(include_blank: "Все"), params[:status]),
+                   id: "status",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="customer_id">Заказчик</label>
+    <%= select_tag :customer_id,
+                   options_from_collection_for_select(@customers, :id, :name, params[:customer_id]),
+                   include_blank: "Все",
+                   id: "customer_id",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="paid">Оплата заказчиком</label>
+    <%= select_tag :paid,
+                   options_for_select([["Любая", ""], ["Оплачен", "yes"], ["Не оплачен", "no"]], params[:paid]),
+                   id: "paid",
+                   class: "rounded border px-2 py-1" %>
+  </div>
   <%= submit_tag "Показать", class: "rounded bg-slate-800 px-3 py-1 text-white" %>
-  <%= link_to "CSV", reports_work_orders_path(from: @from, to: @to, format: :csv), class: "underline self-center" %>
+  <%= link_to "Скачать таблицу",
+              reports_work_orders_path(from: @from, to: @to, status: params[:status], customer_id: params[:customer_id], paid: params[:paid], format: :csv),
+              class: "underline self-center" %>
 <% end %>
 
 <table class="w-full border-collapse text-left text-sm">
@@ -51,3 +75,5 @@
     <% end %>
   </tbody>
 </table>
+
+<%= render_pagination %>

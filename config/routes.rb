@@ -6,7 +6,6 @@ Rails.application.routes.draw do
   resources :doctors
   resources :patients
   resources :services
-  resources :employee_skills, only: %i[index edit update]
 
   resources :my_tasks, only: %i[index show] do
     member do
@@ -55,6 +54,9 @@ Rails.application.routes.draw do
     get :work_orders
     get :payroll
     get :unpaid
+    get :funnel
+    get :customers
+    get :services
   end
 
   get "o/:public_token", to: "public_orders#show", as: :public_order

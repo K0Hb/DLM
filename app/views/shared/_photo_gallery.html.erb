@@ -12,7 +12,7 @@
                 data-preview-alt="<%= photo.filename %>">
           <%= image_tag photo, class: "mx-auto block h-28 w-auto max-w-full rounded", alt: photo.filename.to_s %>
         </button>
-        <div class="flex flex-wrap gap-x-2 gap-y-1">
+        <div class="flex flex-wrap gap-x-2 gap-y-1 no-print">
           <%= link_to "Скачать", download_url, class: "underline text-slate-700", download: photo.filename.to_s %>
           <% if purge_path_proc %>
             <%= button_to "Удалить", purge_path_proc.call(photo), method: :delete, class: "underline text-red-700", form: { class: "inline" } %>
@@ -24,7 +24,7 @@
 
   <dialog data-photo-lightbox-target="dialog"
           data-action="click->photo-lightbox#backdropClose"
-          class="photo-lightbox max-w-[min(96vw,56rem)] rounded-lg border-0 bg-transparent p-0 backdrop:bg-slate-900/70">
+          class="photo-lightbox no-print max-w-[min(96vw,56rem)] rounded-lg border-0 bg-transparent p-0 backdrop:bg-slate-900/70">
     <div class="relative rounded-lg bg-slate-950 p-3 shadow-xl">
       <button type="button"
               data-action="click->photo-lightbox#close"

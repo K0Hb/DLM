@@ -52,7 +52,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    assert_redirected_to users_path
+    assert_redirected_to user_path(User.find_by!(email: "admin-created@example.com"))
     assert_equal "employee", User.find_by!(email: "admin-created@example.com").role
   end
 
@@ -110,7 +110,7 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    assert_redirected_to users_path
+    assert_redirected_to user_path(User.find_by!(email: "new.tech@example.com"))
     follow_redirect!
     assert_match "Пользователь создан", response.body
     assert_match "new.tech@example.com", response.body

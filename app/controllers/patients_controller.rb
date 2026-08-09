@@ -7,7 +7,7 @@ class PatientsController < ApplicationController
     if params[:q].to_s.strip.present?
       scope = scope.where("patients.full_name ILIKE ?", "%#{params[:q].to_s.strip}%")
     end
-    @records = scope
+    @records = paginate(scope)
   end
 
   def show

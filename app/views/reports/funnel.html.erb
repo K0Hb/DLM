@@ -1,0 +1,62 @@
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-semibold">Воронка и задачи на руках</h1>
+    <p class="text-sm text-slate-600">Снимок на сейчас: статусы нарядов и незавершённые услуги у исполнителей.</p>
+  </div>
+  <%= link_to "Ко всем отчётам", reports_path, class: "underline text-sm" %>
+</div>
+
+<section class="mb-8">
+  <h2 class="mb-3 text-lg font-semibold">Наряды по статусам</h2>
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <% @status_counts.each do |status, count| %>
+      <div class="rounded border bg-white px-4 py-3">
+        <p class="text-xs text-slate-500"><%= work_order_status_label(status) %></p>
+        <p class="mt-1 text-2xl font-semibold"><%= count %></p>
+        <% if count.positive? %>
+          <p class="mt-1 text-xs"><%= link_to "Открыть список", work_orders_path(status: status), class: "underline" %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<section>
+  <h2 class="mb-3 text-lg font-semibold">На руках у исполнителей</h2>
+  <% if @in_hand.empty? %>
+    <p class="text-sm text-slate-500">Сейчас нет назначенных или взятых в работу услуг.</p>
+  <% else %>
+    <div class="space-y-6">
+      <% @in_hand.each do |user, lines| %>
+        <div class="rounded border bg-white p-4">
+          <h3 class="mb-2 font-semibold"><%= user.full_name %></h3>
+          <p class="mb-3 text-sm text-slate-600">Строк: <strong><%= lines.size %></strong></p>
+          <table class="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr class="border-b text-slate-500">
+                <th class="py-1 pr-2">Наряд</th>
+                <th class="py-1 pr-2">Заказчик</th>
+                <th class="py-1 pr-2">Услуга</th>
+                <th class="py-1 pr-2">Статус</th>
+                <th class="py-1 pr-2">Срок наряда</th>
+                <th class="py-1 pr-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% lines.each do |line| %>
+                <tr class="border-b border-slate-100">
+                  <td class="py-1 pr-2"><%= record_link("##{line.work_order.number}", work_order_path(line.work_order)) %></td>
+                  <td class="py-1 pr-2"><%= line.work_order.customer.name %></td>
+                  <td class="py-1 pr-2"><%= line.service.name %> × <%= line.quantity %></td>
+                  <td class="py-1 pr-2"><%= service_line_status_badge(line) %></td>
+                  <td class="py-1 pr-2"><%= line.work_order.due_at&.strftime("%d.%m.%Y") || "—" %></td>
+                  <td class="py-1 pr-2"><%= open_record_link(work_order_path(line.work_order)) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</section>

@@ -5,6 +5,7 @@ class TechnicianPayoutsController < ApplicationController
     authorize :payment, :payouts_index?
     @employees = User.employees.active_users.order(:full_name)
     scope = WorkOrderService
+      .active
       .includes(:service, :assignee, work_order: %i[customer patient])
       .joins(:work_order)
       .where(technician_paid: false)
@@ -15,7 +16,7 @@ class TechnicianPayoutsController < ApplicationController
     scope = scope.where(assignee_id: params[:assignee_id]) if params[:assignee_id].present?
     scope = scope.where(status: params[:status]) if params[:status].present?
 
-    @lines = scope.to_a
-    @total_amount = @lines.sum(&:amount)
+    @total_amount = scope.sum(Arel.sql("quantity * technician_price_snapshot"))
+    @lines = paginate(scope)
   end
 end

@@ -1,9 +1,9 @@
 <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
   <div>
-    <h1 class="text-2xl font-semibold">Оплата труда техников</h1>
-    <p class="text-sm text-slate-600">Строки `completed` по `completed_at`</p>
+    <h1 class="text-2xl font-semibold">Начисления сотрудникам</h1>
+    <p class="text-sm text-slate-600">Только выполненные услуги — по дате выполнения. Снятые с наряда выполненные строки тоже учитываются.</p>
   </div>
-  <%= link_to "К отчётам", reports_path, class: "underline text-sm" %>
+  <%= link_to "Ко всем отчётам", reports_path, class: "underline text-sm" %>
 </div>
 
 <%= form_with url: reports_payroll_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
@@ -14,6 +14,29 @@
   <div>
     <label class="mb-1 block text-xs text-slate-500" for="to">По</label>
     <%= date_field_tag :to, @to, id: "to", class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="assignee_id">Сотрудник</label>
+    <%= select_tag :assignee_id,
+                   options_from_collection_for_select(@employees, :id, :full_name, params[:assignee_id]),
+                   include_blank: "Все",
+                   id: "assignee_id",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="service_id">Услуга</label>
+    <%= select_tag :service_id,
+                   options_from_collection_for_select(@services, :id, :name, params[:service_id]),
+                   include_blank: "Все",
+                   id: "service_id",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="paid">Выплата сотруднику</label>
+    <%= select_tag :paid,
+                   options_for_select([["Все", ""], ["Выплачено", "yes"], ["Не выплачено", "no"]], params[:paid]),
+                   id: "paid",
+                   class: "rounded border px-2 py-1" %>
   </div>
   <%= submit_tag "Показать", class: "rounded bg-slate-800 px-3 py-1 text-white" %>
 <% end %>
@@ -26,9 +49,9 @@
       <section class="rounded border bg-white p-4">
         <h2 class="mb-2 text-lg font-semibold"><%= summary[:user].full_name %></h2>
         <p class="mb-3 text-sm text-slate-600">
-          Единиц: <strong><%= summary[:units] %></strong> ·
+          Количество: <strong><%= summary[:units] %></strong> ·
           Начислено: <strong><%= number_to_currency(summary[:amount]) %></strong>
-          · <%= link_to "Оплатить неоплаченные",
+          · <%= link_to "Перейти к выплате",
                         technician_payouts_path(assignee_id: summary[:user].id),
                         class: "underline" %>
         </p>
@@ -40,6 +63,7 @@
               <th class="py-1 pr-2">Кол-во</th>
               <th class="py-1 pr-2">Ставка</th>
               <th class="py-1 pr-2">Сумма</th>
+              <th class="py-1 pr-2">Выплата</th>
               <th class="py-1 pr-2">Выполнено</th>
               <th class="py-1 pr-2"></th>
             </tr>
@@ -52,6 +76,7 @@
                 <td class="py-1 pr-2"><%= line.quantity %></td>
                 <td class="py-1 pr-2"><%= number_to_currency(line.technician_price_snapshot) %></td>
                 <td class="py-1 pr-2"><%= number_to_currency(line.amount) %></td>
+                <td class="py-1 pr-2"><%= technician_paid_badge(line) %></td>
                 <td class="py-1 pr-2"><%= line.completed_at&.strftime("%d.%m.%Y %H:%M") %></td>
                 <td class="py-1 pr-2"><%= open_record_link(work_order_path(line.work_order)) %></td>
               </tr>
@@ -64,6 +89,6 @@
   <p class="text-sm font-medium">
     Итого по лаборатории:
     <%= number_to_currency(@summaries.sum { |s| s[:amount] }) %>
-    (<%= @summaries.sum { |s| s[:units] } %> ед.)
+    (<%= @summaries.sum { |s| s[:units] } %> шт.)
   </p>
 <% end %>

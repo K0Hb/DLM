@@ -14,24 +14,36 @@
 <div class="mb-8 grid gap-2 text-sm md:grid-cols-2 max-w-3xl">
   <div>Email: <%= @user.email %></div>
   <div>Роль: <%= user_role_label(@user.role) %></div>
-  <% if @pool_services.present? %>
-    <div class="md:col-span-2">
-      <div class="font-medium">Пул услуг</div>
-      <div class="mt-1 text-slate-700">
+</div>
+
+<% if @user.employee? %>
+  <div class="mb-8 max-w-xl">
+    <h2 class="mb-2 text-lg font-semibold">Пул услуг</h2>
+    <% if @services && policy(@user).update? %>
+      <%= form_with url: user_path(@user), method: :patch, class: "space-y-3" do %>
+        <%= hidden_field_tag :service_pool, "1" %>
+        <div class="space-y-2">
+          <% @services.each do |service| %>
+            <label class="flex items-center gap-2 text-sm">
+              <%= check_box_tag "user[service_ids][]", service.id, @user.service_ids.include?(service.id), id: "service_#{service.id}" %>
+              <span><%= service.name %> — <%= number_to_currency(service.technician_price) %></span>
+            </label>
+          <% end %>
+          <%= hidden_field_tag "user[service_ids][]", "" %>
+        </div>
+        <%= submit_tag "Сохранить пул", class: "rounded bg-slate-900 px-4 py-2 text-sm text-white" %>
+      <% end %>
+    <% else %>
+      <p class="text-sm text-slate-700">
         <% if @pool_services.any? %>
           <%= @pool_services.map(&:name).join(", ") %>
         <% else %>
           —
         <% end %>
-      </div>
-      <% if policy(@user).update? %>
-        <div class="mt-2">
-          <%= link_to "Изменить пул", edit_employee_skill_path(@user), class: "text-sm underline" %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
-</div>
+      </p>
+    <% end %>
+  </div>
+<% end %>
 
 <div class="mb-6 flex flex-wrap gap-4 text-sm">
   <% @status_counts.each do |status, count| %>
@@ -114,3 +126,5 @@
     <% end %>
   </tbody>
 </table>
+
+<%= render_pagination %>

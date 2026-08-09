@@ -84,15 +84,11 @@ module ApplicationHelper
   end
 
   def work_order_service_delete_confirm(line)
-    message = "Удалить услугу «#{line.service.name}» из наряда?"
-    warnings = []
-    warnings << "статус: #{service_line_status_label(line.status)}" unless line.assigned?
-    warnings << "оплата сотруднику уже зафиксирована" if line.technician_paid?
-    if warnings.any?
-      message += "\n\nВнимание: #{warnings.join('; ')}."
+    if line.deletable?
+      "Удалить услугу «#{line.service.name}» из наряда?\n\nДействие нельзя отменить."
+    else
+      "Снять услугу «#{line.service.name}» с наряда?\n\nВыплата и история сохранятся; строка исчезнет из активного состава."
     end
-    message += "\n\nДействие нельзя отменить."
-    message
   end
 
   def work_order_rollback_confirm(order, target)

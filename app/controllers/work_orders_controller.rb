@@ -15,6 +15,7 @@ class WorkOrdersController < ApplicationController
       q = "%#{params[:patient].to_s.strip}%"
       @work_orders = @work_orders.left_joins(:patient).where("patients.full_name ILIKE ?", q)
     end
+    @work_orders = paginate(@work_orders)
   end
 
   def show

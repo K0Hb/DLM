@@ -37,7 +37,7 @@ class WorkOrder < ApplicationRecord
   end
 
   def assigned_service_lines
-    work_order_services.select(&:persisted?)
+    work_order_services.select { |line| line.persisted? && !line.removed? }
   end
 
   def editable_structure?

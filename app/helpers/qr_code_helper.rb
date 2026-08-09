@@ -1,15 +1,17 @@
 require "rqrcode"
 
 module QrCodeHelper
-  def work_order_qr_svg(work_order, size: 4)
-    qr = RQRCode::QRCode.new(work_order_public_url(work_order))
+  # Screen: compact. Print: larger modules + quiet zone for reliable camera scan.
+  def work_order_qr_svg(work_order, module_size: 5, quiet_modules: 4)
+    qr = RQRCode::QRCode.new(work_order_public_url(work_order), level: :m)
+    quiet = module_size * quiet_modules
     qr.as_svg(
-      offset: 0,
-      color: "0f172a",
+      offset: quiet,
+      color: "000",
       shape_rendering: "crispEdges",
-      module_size: size,
+      module_size: module_size,
       standalone: true,
-      use_path: true
+      use_path: false
     ).html_safe
   end
 end

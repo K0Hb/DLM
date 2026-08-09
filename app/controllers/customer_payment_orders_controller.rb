@@ -16,8 +16,13 @@ class CustomerPaymentOrdersController < ApplicationController
       scope = scope.where(customer_paid_amount: 0)
     end
 
-    @orders = scope.to_a
+    totals = scope.except(:includes, :preload, :eager_load, :order).pick(
+      Arel.sql("COUNT(*)"),
+      Arel.sql("COALESCE(SUM(CASE WHEN customer_paid_amount > 0 THEN customer_paid_amount ELSE customer_payment_amount END), 0)")
+    )
+    @total_count = totals&.first.to_i
+    @total_payment_amount = totals&.second.to_d
+    @orders = paginate(scope)
     @batch_paid = params[:paid] != "yes"
-    @total_payment_amount = @orders.sum { |o| o.customer_order_payment_amount.to_d }
   end
 end

@@ -7,7 +7,7 @@ module CatalogCrud
 
   def index
     authorize model_class
-    @records = policy_scope(model_class).order(order_column)
+    @records = paginate(policy_scope(model_class).order(order_column))
   end
 
   def show
