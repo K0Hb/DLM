@@ -22,16 +22,21 @@ class WorkOrderServicesController < ApplicationController
   end
 
   def destroy
-    if @line.completed?
-      redirect_to @work_order, alert: "Выполненную услугу нельзя удалить — это испортит историю и оплаты сотрудникам."
-      return
-    end
-
     authorize @line
-    @line.destroy!
-    redirect_to @work_order, notice: "Строка удалена."
+
+    if @line.deletable?
+      @line.destroy!
+      redirect_to @work_order, notice: "Строка удалена."
+    elsif @line.removable?
+      @line.soft_remove!(by: current_user)
+      redirect_to @work_order, notice: "Услуга снята с наряда. История и выплаты сохранены."
+    else
+      redirect_to @work_order, alert: destroy_blocked_message(@line)
+    end
   rescue ActiveRecord::RecordNotDestroyed
-    redirect_to @work_order, alert: "Выполненную услугу нельзя удалить — это испортит историю и оплаты сотрудникам."
+    redirect_to @work_order, alert: destroy_blocked_message(@line)
+  rescue WorkOrder::TransitionError => e
+    redirect_to @work_order, alert: e.message
   end
 
   def start
@@ -77,5 +82,15 @@ class WorkOrderServicesController < ApplicationController
 
   def line_params
     params.require(:work_order_service).permit(:service_id, :assignee_id, :quantity, :notes)
+  end
+
+  def destroy_blocked_message(line)
+    if line.removed?
+      "Услуга уже снята с наряда."
+    elsif line.work_order.closed?
+      "Закрытый наряд нельзя менять."
+    else
+      "Нельзя удалить эту услугу."
+    end
   end
 end

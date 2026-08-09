@@ -16,7 +16,7 @@ class WorkOrderServicePolicy < ApplicationPolicy
   end
 
   def destroy?
-    admin_or_superadmin? && record.deletable?
+    admin_or_superadmin? && (record.deletable? || record.removable?)
   end
 
   def start?

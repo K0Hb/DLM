@@ -7,6 +7,7 @@ class MyTasksController < ApplicationController
     authorize WorkOrderService
     @tab = params[:tab].to_s == "earnings" ? "earnings" : "tasks"
     scope = policy_scope(WorkOrderService).includes(:service, work_order: %i[patient customer])
+    scope = @tab == "tasks" ? scope.active : scope
     scope = scope.where(status: params[:status]) if @tab == "tasks" && params[:status].present?
     scope = scope.where(technician_paid: true) if params[:paid] == "yes"
     scope = scope.where(technician_paid: false) if params[:paid] == "no"
@@ -14,7 +15,7 @@ class MyTasksController < ApplicationController
     @completed_sum = scope.where(status: "completed").sum(Arel.sql("quantity * technician_price_snapshot"))
     @paid_sum = scope.where(technician_paid: true).sum(Arel.sql("quantity * technician_price_snapshot"))
     @unpaid_sum = scope.where(technician_paid: false).sum(Arel.sql("quantity * technician_price_snapshot"))
-    @lines = scope.order(updated_at: :desc)
+    @lines = paginate(scope.order(updated_at: :desc))
   end
 
   def show

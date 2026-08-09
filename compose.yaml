@@ -34,11 +34,10 @@ services:
       SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-changeme123}
       SUPERADMIN_FULL_NAME: ${SUPERADMIN_FULL_NAME:-Super Admin}
     volumes:
-      - storage_data:/rails/storage
+      - ${HOST_STORAGE_PATH:-./storage}:/rails/storage
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   postgres_data:
-  storage_data:

@@ -1,63 +1,108 @@
-<div class="space-y-6">
-  <div>
-    <p class="text-sm text-slate-500">Публичный просмотр наряда</p>
-    <h1 class="text-2xl font-semibold">Наряд №<%= @work_order.number %></h1>
-    <p class="text-slate-600">Статус: <%= work_order_status_badge(@work_order) %></p>
-  </div>
-
-  <div class="grid gap-2 text-sm md:grid-cols-2">
-    <div>Заказчик: <%= @work_order.customer.name %></div>
-    <div>Пациент: <%= @work_order.patient&.full_name || "—" %></div>
-    <div>Врач: <%= @work_order.doctor&.full_name || "—" %></div>
-    <div>Срок: <%= @work_order.due_at&.strftime("%d.%m.%Y %H:%M") || "—" %></div>
-    <div>Оплата: <%= @work_order.customer_paid? ? "#{number_to_currency(@work_order.customer_paid_amount)} (#{@work_order.customer_paid_at&.strftime("%d.%m.%Y")})" : "не оплачен" %></div>
-    <div>Цвет зубов: <%= Odontogram.shade_label_for(@work_order.dental_formula["shade"] || @work_order.tooth_color).presence || "—" %></div>
-    <div class="md:col-span-2">
-      <div class="font-medium">Описание</div>
-      <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= @work_order.notes.presence || "—" %></div>
+<div class="space-y-6 work-order-print-public work-order-print-sheet">
+  <div class="flex flex-wrap items-start justify-between gap-4 work-order-print-header">
+    <div class="work-order-print-title">
+      <p class="text-sm text-slate-500 no-print">Публичный просмотр наряда</p>
+      <h1 class="text-2xl font-semibold">Наряд №<%= @work_order.number %></h1>
+      <p class="text-slate-600">Статус: <%= work_order_status_badge(@work_order) %></p>
+    </div>
+    <div class="flex flex-wrap items-start gap-3 work-order-print-qr-wrap">
+      <div class="work-order-qr work-order-qr--screen shrink-0 rounded border bg-white p-2 no-print">
+        <%= work_order_qr_svg(@work_order, module_size: 5) %>
+      </div>
+      <div class="work-order-qr work-order-qr--print shrink-0 rounded border bg-white p-3 print-only">
+        <%= work_order_qr_svg(@work_order, module_size: 8) %>
+      </div>
+      <% if user_signed_in? && policy(@work_order).show? %>
+        <div class="flex flex-wrap gap-2 no-print">
+          <button type="button"
+                  onclick="window.print()"
+                  class="rounded border px-4 py-2 text-sm hover:bg-white">
+            Печать
+          </button>
+          <%= link_to "Открыть наряд",
+                      work_order_path(@work_order),
+                      class: "rounded bg-slate-900 px-4 py-2 text-sm text-white" %>
+        </div>
+      <% elsif !user_signed_in? %>
+        <div class="flex flex-wrap gap-2 no-print">
+          <button type="button"
+                  onclick="window.print()"
+                  class="rounded border px-4 py-2 text-sm hover:bg-white">
+            Печать
+          </button>
+          <%= link_to "Войти",
+                      new_user_session_path,
+                      class: "rounded bg-slate-900 px-4 py-2 text-sm text-white" %>
+        </div>
+      <% else %>
+        <button type="button"
+                onclick="window.print()"
+                class="rounded border px-4 py-2 text-sm hover:bg-white no-print">
+          Печать
+        </button>
+      <% end %>
     </div>
   </div>
 
-  <%= render "shared/odontogram_readonly", work_order: @work_order %>
+  <div class="work-order-print-grid grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,28rem)] lg:items-start">
+    <div class="work-order-print-main space-y-6">
+      <div class="grid gap-2 text-sm md:grid-cols-2 work-order-print-meta">
+        <div>Заказчик: <%= @work_order.customer.name %></div>
+        <div>Пациент: <%= @work_order.patient&.full_name || "—" %></div>
+        <div>Врач: <%= @work_order.doctor&.full_name || "—" %></div>
+        <div>Срок: <%= @work_order.due_at&.strftime("%d.%m.%Y %H:%M") || "—" %></div>
+        <div class="no-print">Оплата: <%= @work_order.customer_paid? ? "#{number_to_currency(@work_order.customer_paid_amount)} (#{@work_order.customer_paid_at&.strftime("%d.%m.%Y")})" : "не оплачен" %></div>
+        <div>Цвет зубов: <%= Odontogram.shade_label_for(@work_order.dental_formula["shade"] || @work_order.tooth_color).presence || "—" %></div>
+      </div>
+      <div class="work-order-print-notes">
+        <div class="font-medium">Описание</div>
+        <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= @work_order.notes.presence || "—" %></div>
+      </div>
 
-  <div>
-    <h2 class="mb-3 text-lg font-semibold">Услуги</h2>
-    <table class="w-full border-collapse text-left text-sm">
-      <thead>
-        <tr class="border-b text-slate-500">
-          <th class="py-2 pr-2">Услуга</th>
-          <th class="py-2 pr-2">Исполнитель</th>
-          <th class="py-2 pr-2">Кол-во</th>
-          <th class="py-2 pr-2">Ставка</th>
-          <th class="py-2 pr-2">Сумма</th>
-          <th class="py-2 pr-2">Статус</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @work_order.work_order_services.each do |line| %>
-          <tr class="border-b">
-            <td class="py-2 pr-2"><%= line.service.name %></td>
-            <td class="py-2 pr-2"><%= line.assignee.full_name %></td>
-            <td class="py-2 pr-2"><%= line.quantity %></td>
-            <td class="py-2 pr-2"><%= number_to_currency(line.technician_price_snapshot) %></td>
-            <td class="py-2 pr-2"><%= number_to_currency(line.amount) %></td>
-            <td class="py-2 pr-2"><%= service_line_status_badge(line) %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+      <div class="work-order-print-services">
+        <h2 class="mb-3 text-lg font-semibold">Услуги</h2>
+        <table class="w-full border-collapse text-left text-sm">
+          <thead>
+            <tr class="border-b text-slate-500">
+              <th class="py-2 pr-2">Услуга</th>
+              <th class="py-2 pr-2">Исполнитель</th>
+              <th class="py-2 pr-2">Кол-во</th>
+              <th class="py-2 pr-2 no-print">Ставка</th>
+              <th class="py-2 pr-2 no-print">Сумма</th>
+              <th class="py-2 pr-2">Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @work_order.assigned_service_lines.each do |line| %>
+              <tr class="border-b">
+                <td class="py-2 pr-2"><%= line.service.name %></td>
+                <td class="py-2 pr-2"><%= line.assignee.full_name %></td>
+                <td class="py-2 pr-2"><%= line.quantity %></td>
+                <td class="py-2 pr-2 no-print"><%= number_to_currency(line.technician_price_snapshot) %></td>
+                <td class="py-2 pr-2 no-print"><%= number_to_currency(line.amount) %></td>
+                <td class="py-2 pr-2"><%= service_line_status_badge(line) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="work-order-print-side">
+      <%= render "shared/odontogram_readonly", work_order: @work_order, sidebar: true %>
+    </aside>
   </div>
 
   <% if @work_order.photos.attached? %>
-    <div>
+    <div class="no-print">
       <h2 class="mb-3 text-lg font-semibold">Фото наряда</h2>
       <%= render "shared/photo_gallery_readonly", photos: @work_order.photos %>
     </div>
   <% end %>
 
-  <% line_photos = @work_order.work_order_services.select { |l| l.photos.attached? } %>
+  <% line_photos = @work_order.assigned_service_lines.select { |l| l.photos.attached? } %>
   <% if line_photos.any? %>
-    <div class="space-y-4">
+    <div class="space-y-4 no-print">
       <h2 class="text-lg font-semibold">Фото по услугам</h2>
       <% line_photos.each do |line| %>
         <div>

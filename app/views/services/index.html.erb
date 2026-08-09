@@ -9,3 +9,5 @@
              [ "Ставка технику", ->(r) { number_to_currency(r.technician_price) } ],
              [ "Активна", ->(r) { r.active? ? "да" : "нет" } ]
            ] %>
+
+<%= render_pagination %>

@@ -33,7 +33,7 @@ module Payments
     end
 
     def self.technician_payable?(line)
-      line.assignee_id.present? && line.work_order.present? && !line.work_order.draft?
+      !line.removed? && line.assignee_id.present? && line.work_order.present? && !line.work_order.draft?
     end
 
     def self.technician_locked?(line, actor:)

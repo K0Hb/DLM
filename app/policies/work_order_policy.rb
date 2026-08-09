@@ -8,7 +8,7 @@ class WorkOrderPolicy < CatalogPolicy
       if user&.admin_or_superadmin?
         scope.all
       elsif user&.employee?
-        scope.joins(:work_order_services).where(work_order_services: { assignee_id: user.id }).distinct
+        scope.joins(:work_order_services).merge(WorkOrderService.active).where(work_order_services: { assignee_id: user.id }).distinct
       else
         scope.none
       end
@@ -18,6 +18,6 @@ class WorkOrderPolicy < CatalogPolicy
   private
 
   def assigned_employee?
-    user&.employee? && record.work_order_services.exists?(assignee_id: user.id)
+    user&.employee? && record.work_order_services.active.exists?(assignee_id: user.id)
   end
 end

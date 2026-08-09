@@ -1,9 +1,12 @@
 <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
   <div>
-    <h1 class="text-2xl font-semibold">Неоплаченные заказчиком</h1>
-    <p class="text-sm text-slate-600">Отчёт: наряды без оплаты заказчиком</p>
+    <h1 class="text-2xl font-semibold">Долги заказчиков</h1>
+    <p class="text-sm text-slate-600">Сводка: наряды без оплаты заказчиком. Здесь только просмотр.</p>
   </div>
-  <%= link_to "К отчётам", reports_path, class: "underline text-sm" %>
+  <div class="flex flex-wrap gap-3 text-sm">
+    <%= link_to "Отметить оплату", customer_payment_orders_path(paid: "no"), class: "rounded bg-slate-900 px-3 py-1.5 text-white" %>
+    <%= link_to "Ко всем отчётам", reports_path, class: "underline self-center" %>
+  </div>
 </div>
 
 <%= form_with url: reports_unpaid_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-3 text-sm" do %>
@@ -12,6 +15,21 @@
     <%= select_tag :status,
                    options_for_select(work_order_status_options(include_blank: "Все"), params[:status]),
                    id: "status",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="customer_id">Заказчик</label>
+    <%= select_tag :customer_id,
+                   options_from_collection_for_select(@customers, :id, :name, params[:customer_id]),
+                   include_blank: "Все",
+                   id: "customer_id",
+                   class: "rounded border px-2 py-1" %>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs text-slate-500" for="amount">Сумма к оплате</label>
+    <%= select_tag :amount,
+                   options_for_select([["Любая", ""], ["Только больше нуля", "yes"]], params[:amount]),
+                   id: "amount",
                    class: "rounded border px-2 py-1" %>
   </div>
   <div>
@@ -69,3 +87,5 @@
     <% end %>
   </tbody>
 </table>
+
+<%= render_pagination %>

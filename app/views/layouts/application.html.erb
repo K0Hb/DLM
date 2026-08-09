@@ -34,7 +34,6 @@
               <%= link_to "Врачи", doctors_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
               <%= link_to "Пациенты", patients_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
               <%= link_to "Услуги", services_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
-              <%= link_to "Пул услуг", employee_skills_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
             <% end %>
             <% if policy(User).index? %>
               <%= link_to "Пользователи", users_path, class: "text-sm text-slate-600 hover:text-slate-900" %>
@@ -50,10 +49,10 @@
 
     <div class="app-shell py-6">
       <% if notice.present? %>
-        <p class="mb-4 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"><%= notice %></p>
+        <p class="flash-notice mb-4 rounded border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"><%= notice %></p>
       <% end %>
       <% if alert.present? %>
-        <p class="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"><%= alert %></p>
+        <p class="flash-alert mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"><%= alert %></p>
       <% end %>
 
       <main>

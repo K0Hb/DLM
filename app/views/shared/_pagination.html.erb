@@ -1,0 +1,36 @@
+<%# locals: pagination %>
+<% if pagination.total_count.positive? %>
+  <nav class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600 no-print" aria-label="Страницы">
+    <p>
+      Показано <span class="font-medium text-slate-800"><%= pagination.from %>–<%= pagination.to %></span>
+      из <span class="font-medium text-slate-800"><%= pagination.total_count %></span>
+      · по <%= pagination.per_page %> на странице
+    </p>
+
+    <% if pagination.total_pages > 1 %>
+      <div class="flex flex-wrap items-center gap-1">
+        <% if pagination.prev_page %>
+          <%= link_to "← Назад", pagination_url(pagination.prev_page), class: "rounded border border-slate-300 px-2.5 py-1 hover:bg-white" %>
+        <% else %>
+          <span class="rounded border border-transparent px-2.5 py-1 text-slate-400">← Назад</span>
+        <% end %>
+
+        <% pagination.pages_to_show.each do |item| %>
+          <% if item == :gap %>
+            <span class="px-1 text-slate-400">…</span>
+          <% elsif item == pagination.page %>
+            <span class="rounded bg-slate-900 px-2.5 py-1 font-medium text-white" aria-current="page"><%= item %></span>
+          <% else %>
+            <%= link_to item, pagination_url(item), class: "rounded border border-slate-300 px-2.5 py-1 hover:bg-white" %>
+          <% end %>
+        <% end %>
+
+        <% if pagination.next_page %>
+          <%= link_to "Вперёд →", pagination_url(pagination.next_page), class: "rounded border border-slate-300 px-2.5 py-1 hover:bg-white" %>
+        <% else %>
+          <span class="rounded border border-transparent px-2.5 py-1 text-slate-400">Вперёд →</span>
+        <% end %>
+      </div>
+    <% end %>
+  </nav>
+<% end %>

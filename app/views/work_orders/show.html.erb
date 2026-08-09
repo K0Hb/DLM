@@ -1,5 +1,6 @@
-<div class="mb-4 flex flex-wrap items-start justify-between gap-4">
-  <div class="min-w-0 flex-1">
+<div class="work-order-print-sheet">
+<div class="mb-4 flex flex-wrap items-start justify-between gap-4 work-order-print-header">
+  <div class="min-w-0 flex-1 work-order-print-title">
     <h1 class="text-2xl font-semibold">Наряд №<%= @work_order.number %></h1>
     <% if @manage_work_order %>
       <%= render "status_controls", work_order: @work_order %>
@@ -7,25 +8,38 @@
       <p class="mt-1 text-slate-600">Статус: <%= work_order_status_badge(@work_order) %></p>
     <% end %>
   </div>
-  <div class="flex flex-wrap gap-2 text-sm">
-    <% if @manage_work_order %>
-      <%= link_to "Изменить", edit_work_order_path(@work_order), class: "rounded border px-3 py-1" %>
-      <%= link_to "К списку", work_orders_path, class: "underline px-2 py-1" %>
-    <% else %>
-      <%= link_to "Мои задачи", my_tasks_path, class: "underline px-2 py-1" %>
-    <% end %>
+  <div class="flex flex-wrap items-start gap-3 work-order-print-qr-wrap">
+    <div class="work-order-qr work-order-qr--screen shrink-0 rounded border bg-white p-2 no-print">
+      <%= work_order_qr_svg(@work_order, module_size: 5) %>
+    </div>
+    <div class="work-order-qr work-order-qr--print shrink-0 rounded border bg-white p-3 print-only">
+      <%= work_order_qr_svg(@work_order, module_size: 8) %>
+    </div>
+    <div class="flex flex-wrap gap-2 text-sm no-print">
+      <button type="button"
+              onclick="window.print()"
+              class="rounded border px-3 py-1 hover:bg-white">
+        Печать
+      </button>
+      <% if @manage_work_order %>
+        <%= link_to "Изменить", edit_work_order_path(@work_order), class: "rounded border px-3 py-1" %>
+        <%= link_to "К списку", work_orders_path, class: "underline px-2 py-1" %>
+      <% else %>
+        <%= link_to "Мои задачи", my_tasks_path, class: "underline px-2 py-1" %>
+      <% end %>
+    </div>
   </div>
 </div>
 
-<div class="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(20rem,32rem)] xl:grid-cols-[minmax(0,1fr)_minmax(24rem,36rem)] lg:items-start lg:gap-8 xl:gap-10">
-  <div class="order-2 min-w-0 space-y-6 lg:order-1">
-    <div class="grid gap-2 text-sm md:grid-cols-2">
+<div class="work-order-print-grid lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(20rem,32rem)] xl:grid-cols-[minmax(0,1fr)_minmax(24rem,36rem)] lg:items-start lg:gap-8 xl:gap-10">
+  <div class="order-2 min-w-0 space-y-6 lg:order-1 work-order-print-main">
+    <div class="grid gap-2 text-sm md:grid-cols-2 work-order-print-meta">
       <div>Заказчик: <%= @work_order.customer.name %></div>
       <div>Пациент: <%= @work_order.patient&.full_name || "—" %></div>
       <div>Врач: <%= @work_order.doctor&.full_name || "—" %></div>
       <div>Срок: <%= @work_order.due_at&.strftime("%d.%m.%Y %H:%M") || "—" %></div>
       <% if @manage_work_order %>
-        <div class="md:col-span-2 space-y-2">
+        <div class="md:col-span-2 space-y-2 no-print">
           <div>
             Оплата: <%= customer_paid_badge(@work_order) %>
             <% if @work_order.customer_paid? %>
@@ -48,41 +62,38 @@
           </div>
         </div>
       <% end %>
-      <div class="md:col-span-2">
-        <div class="font-medium">Описание</div>
-        <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= @work_order.notes.presence || "—" %></div>
-      </div>
+    </div>
+    <div class="work-order-print-notes">
+      <div class="font-medium">Описание</div>
+      <div class="mt-1 whitespace-pre-wrap text-slate-700"><%= @work_order.notes.presence || "—" %></div>
     </div>
 
     <% if @manage_work_order %>
-      <div class="rounded border bg-white p-4" data-controller="clipboard">
-        <h2 class="mb-3 text-sm font-semibold">Публичная ссылка / QR</h2>
-        <div class="flex flex-wrap items-start gap-4">
-          <div class="rounded border bg-white p-2"><%= work_order_qr_svg(@work_order) %></div>
-          <div class="min-w-[16rem] flex-1 space-y-2 text-sm">
-            <label class="block text-xs text-slate-500" for="public-url">Ссылка</label>
-            <input id="public-url"
-                   type="text"
-                   readonly
-                   data-clipboard-target="source"
-                   value="<%= work_order_public_url(@work_order) %>"
-                   class="w-full rounded border px-2 py-1 font-mono text-xs" />
-            <div class="flex flex-wrap items-center gap-3">
-              <button type="button" data-action="click->clipboard#copy" class="rounded bg-slate-900 px-3 py-1 text-white">Копировать</button>
-              <%= link_to "Открыть", work_order_public_url(@work_order), target: "_blank", rel: "noopener", class: "underline" %>
-              <span data-clipboard-target="status" class="text-xs text-emerald-700"></span>
-            </div>
+      <div class="rounded border bg-white p-4 no-print" data-controller="clipboard">
+        <h2 class="mb-3 text-sm font-semibold">Публичная ссылка</h2>
+        <div class="space-y-2 text-sm max-w-xl">
+          <label class="block text-xs text-slate-500" for="public-url">Ссылка</label>
+          <input id="public-url"
+                 type="text"
+                 readonly
+                 data-clipboard-target="source"
+                 value="<%= work_order_public_url(@work_order) %>"
+                 class="w-full rounded border px-2 py-1 font-mono text-xs" />
+          <div class="flex flex-wrap items-center gap-3">
+            <button type="button" data-action="click->clipboard#copy" class="rounded bg-slate-900 px-3 py-1 text-white">Копировать</button>
+            <%= link_to "Открыть", work_order_public_url(@work_order), target: "_blank", rel: "noopener", class: "underline" %>
+            <span data-clipboard-target="status" class="text-xs text-emerald-700"></span>
           </div>
         </div>
       </div>
     <% end %>
 
-    <div>
+    <div class="work-order-print-services">
       <h2 class="mb-3 text-lg font-semibold">Услуги</h2>
       <% if @manage_work_order %>
         <% assignees_unpaid = @work_order.assigned_service_lines.reject(&:technician_paid?).select(&:payout_eligible?).group_by(&:assignee) %>
         <% if assignees_unpaid.any? %>
-          <div class="mb-3 flex flex-wrap gap-2 text-sm">
+          <div class="mb-3 flex flex-wrap gap-2 text-sm no-print">
             <% assignees_unpaid.each do |assignee, lines| %>
               <%= link_to "Оплатить все: #{assignee.full_name}",
                           new_technician_payment_path(work_order_service_ids: lines.map(&:id), paid: true, return_to: work_order_path(@work_order)),
@@ -90,7 +101,7 @@
             <% end %>
           </div>
         <% elsif @work_order.draft? && @work_order.assigned_service_lines.any? %>
-          <p class="mb-3 text-sm text-slate-500">Оплата сотруднику доступна после перевода наряда из черновика (например «В работу»).</p>
+          <p class="mb-3 text-sm text-slate-500 no-print">Оплата сотруднику доступна после перевода наряда из черновика (например «В работу»).</p>
         <% end %>
       <% end %>
       <div class="overflow-x-auto">
@@ -100,10 +111,10 @@
               <th class="py-2 pr-2">Услуга</th>
               <th class="py-2 pr-2">Исполнитель</th>
               <th class="py-2 pr-2">Кол-во</th>
-              <th class="py-2 pr-2">Ставка</th>
+              <th class="py-2 pr-2 no-print">Ставка</th>
               <th class="py-2 pr-2">Статус</th>
-              <th class="py-2 pr-2">Оплата сотруднику</th>
-              <th class="py-2"></th>
+              <th class="py-2 pr-2 no-print">Оплата сотруднику</th>
+              <th class="py-2 no-print"></th>
             </tr>
           </thead>
           <tbody>
@@ -112,10 +123,10 @@
                 <td class="py-2 pr-2"><%= line.service.name %></td>
                 <td class="py-2 pr-2"><%= line.assignee.full_name %></td>
                 <td class="py-2 pr-2"><%= line.quantity %></td>
-                <td class="py-2 pr-2"><%= number_to_currency(line.technician_price_snapshot) %></td>
+                <td class="py-2 pr-2 no-print"><%= number_to_currency(line.technician_price_snapshot) %></td>
                 <td class="py-2 pr-2"><%= service_line_status_badge(line) %></td>
-                <td class="py-2 pr-2"><%= technician_paid_badge(line) %></td>
-                <td class="py-2 text-right space-x-1">
+                <td class="py-2 pr-2 no-print"><%= technician_paid_badge(line) %></td>
+                <td class="py-2 text-right space-x-1 no-print">
                   <% if @manage_work_order %>
                     <% if line.assigned? %>
                       <%= button_to "В работу", start_work_order_work_order_service_path(@work_order, line), method: :post, class: "underline" %>
@@ -141,7 +152,7 @@
                       <% end %>
                     <% end %>
                     <% if @work_order.editable_structure? && policy(line).destroy? %>
-                      <%= button_to "Удалить",
+                      <%= button_to line.deletable? ? "Удалить" : "Снять",
                                     work_order_work_order_service_path(@work_order, line),
                                     method: :delete,
                                     form: { data: { turbo_confirm: work_order_service_delete_confirm(line) }, class: "inline" },
@@ -159,7 +170,7 @@
 
       <% if @manage_work_order && @work_order.editable_structure? %>
         <%= form_with model: [@work_order, @line],
-                      class: "grid gap-3 md:grid-cols-4 xl:grid-cols-[2fr_2fr_6rem_auto] items-end text-sm",
+                      class: "grid gap-3 md:grid-cols-4 xl:grid-cols-[2fr_2fr_6rem_auto] items-end text-sm no-print",
                       data: {
                         controller: "service-assignee",
                         service_assignee_map_value: @employee_ids_by_service.to_json
@@ -190,7 +201,7 @@
     </div>
 
     <% if @manage_work_order %>
-      <div>
+      <div class="no-print">
         <h2 class="mb-3 text-lg font-semibold">Фото наряда (до <%= WorkOrder.photos_limit %>)</h2>
         <% if @work_order.photos.attached? %>
           <div class="mb-4">
@@ -208,14 +219,15 @@
         <% end %>
       </div>
     <% elsif @work_order.photos.attached? %>
-      <div>
+      <div class="no-print">
         <h2 class="mb-3 text-lg font-semibold">Фото наряда</h2>
         <%= render "shared/photo_gallery", photos: @work_order.photos, purge_path_proc: nil %>
       </div>
     <% end %>
   </div>
 
-  <aside class="order-1 mb-6 min-w-0 overflow-hidden lg:order-2 lg:mb-0 lg:sticky lg:top-4 lg:self-start">
+  <aside class="order-1 mb-6 min-w-0 overflow-hidden lg:order-2 lg:mb-0 lg:sticky lg:top-4 lg:self-start work-order-print-side">
     <%= render "shared/odontogram_readonly", work_order: @work_order, sidebar: true %>
   </aside>
+</div>
 </div>

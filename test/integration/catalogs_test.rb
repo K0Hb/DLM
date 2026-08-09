@@ -132,16 +132,17 @@ class CatalogsTest < ActionDispatch::IntegrationTest
   test "admin can assign service pool to employee" do
     sign_in users(:admin)
     employee = users(:employee)
-    patch employee_skill_path(employee), params: {
+    patch user_path(employee), params: {
+      service_pool: "1",
       user: { service_ids: [ services(:crown).id, services(:veneer).id ] }
     }
-    assert_redirected_to employee_skills_path
+    assert_redirected_to user_path(employee)
     assert_equal [ "Винир", "Коронка Zr" ], employee.reload.services.order(:name).pluck(:name)
   end
 
   test "employee cannot manage service pool" do
     sign_in users(:employee)
-    get employee_skills_path
+    get user_path(users(:employee))
     assert_redirected_to root_path
   end
 end

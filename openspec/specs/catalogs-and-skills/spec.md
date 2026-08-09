@@ -44,15 +44,19 @@ Admin and superadmin MUST CRUD services with unique name and non-negative `techn
 - **THEN** deletion is rejected with a clear message
 
 ### Requirement: Admin assigns service pool to employees
-Admin and superadmin MUST be able to assign a set of services to an employee. Employees MUST not manage pools.
+Admin and superadmin MUST assign a set of services to an employee on the employee user card (`/users/:id`). Employees MUST not manage pools. The dedicated service-pool list/edit UI (`/employee_skills`) MUST NOT be exposed in navigation or as a management surface.
 
-#### Scenario: Admin assigns services to employee
-- **WHEN** an admin selects services for an employee and saves
-- **THEN** those services are associated with the employee
+#### Scenario: Admin assigns services on user card
+- **WHEN** an admin opens an employee card and saves a selected set of services
+- **THEN** those services are associated with the employee and the admin remains on the user card
 
-#### Scenario: Employee denied service pool UI
-- **WHEN** an employee opens the service pool management UI
+#### Scenario: Employee denied service pool on user card
+- **WHEN** an employee requests a user card or attempts to update another user's service pool
 - **THEN** access is denied
+
+#### Scenario: No separate pool navigation
+- **WHEN** an admin views the main application header
+- **THEN** there is no «Пул услуг» navigation entry to a separate pool index
 
 ### Requirement: Catalog scenarios covered by tests
 Main catalog and service-pool flows MUST be covered by Rails integration and/or system tests.

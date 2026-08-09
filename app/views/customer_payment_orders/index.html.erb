@@ -52,7 +52,7 @@
         <button type="button" data-action="payment-line-select#uncheckAll" class="underline">Снять все</button>
       </div>
       <p class="text-slate-600">
-        Нарядов: <strong><%= @orders.size %></strong>
+        Нарядов: <strong><%= @total_count %></strong>
         · сумма оплаты в списке: <strong><%= number_to_currency(@total_payment_amount) %></strong>
         · отмечено: <strong data-payment-line-select-target="total"><%= number_to_currency(0) %></strong>
       </p>
@@ -114,6 +114,8 @@
         <% end %>
       </tbody>
     </table>
+
+    <%= render_pagination %>
 
     <div class="flex flex-wrap gap-3">
       <% if @batch_paid %>

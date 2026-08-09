@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# DLM — резервная копия PostgreSQL (только БД).
+#
+# Примеры:
+#   bin/backup
+#   KEEP_BACKUPS=8 bin/backup
+#   BACKUP_ROOT=/mnt/backups bin/backup
+#
+# Переменные (.env): POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DATABASE_URL, BACKUP_ROOT, KEEP_BACKUPS
+#
+# Cron (вс 03:15, 8 копий) — в crontab -e одна строка:
+#   15 3 * * 0 cd /path/to/DLM && KEEP_BACKUPS=8 /usr/bin/bash bin/backup >> log/backup.log 2>&1
+#
+# Восстановление:
+#   pg_restore --clean --if-exists -d "$DATABASE_URL" backups/<метка>/database.dump
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+load_dotenv() {
+  local file="$1"
+  [[ -f "$file" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%$'\r'}"
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+    if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      local key="${BASH_REMATCH[1]}"
+      local val="${BASH_REMATCH[2]}"
+      val="${val%\"}"; val="${val#\"}"
+      val="${val%\'}"; val="${val#\'}"
+      if [[ -z "${!key+x}" ]]; then
+        export "$key=$val"
+      fi
+    fi
+  done < "$file"
+}
+
+load_dotenv "$ROOT/.env"
+
+BACKUP_ROOT="${BACKUP_ROOT:-$ROOT/backups}"
+KEEP_BACKUPS="${KEEP_BACKUPS:-0}"
+STAMP="$(date +%Y%m%d-%H%M%S)"
+DEST="$BACKUP_ROOT/$STAMP"
+mkdir -p "$DEST" "$ROOT/log"
+
+POSTGRES_HOST="${POSTGRES_HOST:-localhost}"
+POSTGRES_PORT="${POSTGRES_PORT:-5432}"
+POSTGRES_USER="${POSTGRES_USER:-dlm}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-dlm}"
+POSTGRES_DB="${POSTGRES_DB:-dlm_development}"
+
+echo "==> Backup $STAMP -> $DEST"
+
+dump_db() {
+  local out="$DEST/database.dump"
+
+  # Prefer compose db: same major version as the running server
+  if command -v docker >/dev/null 2>&1 && docker compose ps --status running --services 2>/dev/null | grep -qx db; then
+    local db_name="$POSTGRES_DB"
+    if ! docker compose exec -T db psql -U "$POSTGRES_USER" -d "$db_name" -c 'SELECT 1' >/dev/null 2>&1; then
+      db_name=dlm_production
+    fi
+    echo "==> Database: docker compose exec db ($db_name)"
+    docker compose exec -T db pg_dump -U "$POSTGRES_USER" -d "$db_name" --format=custom > "$out"
+    return 0
+  fi
+
+  if command -v pg_dump >/dev/null 2>&1; then
+    if [[ -n "${DATABASE_URL:-}" ]]; then
+      echo "==> Database: pg_dump (DATABASE_URL)"
+      pg_dump --format=custom --file="$out" "$DATABASE_URL"
+    else
+      echo "==> Database: pg_dump ${POSTGRES_USER}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+      PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
+        --host="$POSTGRES_HOST" \
+        --port="$POSTGRES_PORT" \
+        --username="$POSTGRES_USER" \
+        --dbname="$POSTGRES_DB" \
+        --format=custom \
+        --file="$out"
+    fi
+    return 0
+  fi
+
+  echo "Ошибка: нет pg_dump и не запущен сервис db в docker compose." >&2
+  exit 1
+}
+
+dump_db
+
+cat > "$DEST/MANIFEST.txt" <<EOF
+created_at=$STAMP
+database=database.dump
+host=$(hostname 2>/dev/null || echo unknown)
+EOF
+
+echo "==> Готово: $DEST"
+
+if [[ "$KEEP_BACKUPS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "==> Ротация: оставить $KEEP_BACKUPS последних"
+  mapfile -t all < <(ls -1 "$BACKUP_ROOT" 2>/dev/null | sort -r)
+  if ((${#all[@]} > KEEP_BACKUPS)); then
+    for name in "${all[@]:KEEP_BACKUPS}"; do
+      echo "    удаление $BACKUP_ROOT/$name"
+      rm -rf "$BACKUP_ROOT/$name"
+    done
+  fi
+fi

@@ -3,10 +3,10 @@
 <% next_targets = work_order.advance_targets %>
 <% blocked = work_order.status == "in_progress" && (lines.empty? || !work_order.all_services_completed?) %>
 
-<section class="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3.5 lg:max-w-none" aria-labelledby="work-order-status-heading">
-  <h2 id="work-order-status-heading" class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Статус</h2>
+<section class="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3.5 lg:max-w-none work-order-status-print" aria-labelledby="work-order-status-heading">
+  <h2 id="work-order-status-heading" class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 no-print">Статус</h2>
 
-  <div class="flex gap-1" role="list">
+  <div class="flex gap-1 no-print" role="list">
     <% WorkOrder::STATUSES.each do |step| %>
       <% state = work_order_pipeline_step_state(work_order, step) %>
       <div class="h-1.5 flex-1 rounded-full <%= work_order_pipeline_segment_classes(state) %>"
@@ -30,7 +30,7 @@
     </div>
 
     <% if next_targets.any? %>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2 no-print">
         <% next_targets.each do |to| %>
           <%# Классы только здесь — Tailwind их видит при сборке %>
           <% btn_class = if next_targets.many? && to == "sent"
@@ -50,7 +50,7 @@
   </div>
 
   <% if blocked %>
-    <p class="mt-2.5 text-xs text-amber-800">
+    <p class="mt-2.5 text-xs text-amber-800 no-print">
       <% if lines.empty? %>
         Добавьте услуги ниже, чтобы перейти в «Готов».
       <% else %>
@@ -59,7 +59,7 @@
     </p>
   <% end %>
 
-  <details class="mt-2.5 text-xs text-slate-500">
+  <details class="mt-2.5 text-xs text-slate-500 no-print">
     <summary class="cursor-pointer select-none hover:text-slate-800">
       Подробнее
     </summary>

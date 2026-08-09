@@ -1,6 +1,6 @@
 <div class="mb-6">
   <h1 class="text-2xl font-semibold">Доставка</h1>
-  <p class="text-slate-600 text-sm">Наряды в статусе ready</p>
+  <p class="text-slate-600 text-sm">Наряды готовые к отправке</p>
 </div>
 
 <table class="w-full border-collapse text-left text-sm">
@@ -18,11 +18,17 @@
         <td class="py-2 pr-3"><%= record_link("##{order.number}", work_order_path(order)) %></td>
         <td class="py-2 pr-3"><%= order.customer.name %></td>
         <td class="py-2 pr-3"><%= order.patient&.full_name || "—" %></td>
-        <td class="py-2 pr-3 text-right space-x-2">
-          <%= open_record_link(work_order_path(order)) %>
-          <%= button_to "Отправлен", mark_sent_delivery_path(order), method: :post, class: "inline rounded bg-slate-900 px-3 py-1 text-white" %>
+        <td class="py-2 pl-3">
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            <%= link_to "Открыть", work_order_path(order),
+                        class: "inline-flex items-center rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-white" %>
+            <%= button_to "Отправлен", mark_sent_delivery_path(order), method: :post,
+                          class: "inline-flex items-center rounded bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-800" %>
+          </div>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
+<%= render_pagination %>

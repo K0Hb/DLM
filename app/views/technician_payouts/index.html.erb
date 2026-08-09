@@ -16,7 +16,7 @@
                    class: "rounded border px-2 py-1" %>
   </div>
   <div>
-    <label class="mb-1 block text-xs text-slate-500" for="status">Статус строки</label>
+    <label class="mb-1 block text-xs text-slate-500" for="status">Статус</label>
     <%= select_tag :status,
                    options_for_select(service_line_status_options(include_blank: "Все"), params[:status]),
                    id: "status",
@@ -43,7 +43,7 @@
         <button type="button" data-action="payment-line-select#uncheckAll" class="underline">Снять все</button>
       </div>
       <p class="text-slate-600">
-        Строк: <strong><%= @lines.size %></strong>
+        Строк: <strong><%= @pagination&.total_count || @lines.size %></strong>
         · сумма списка: <strong><%= number_to_currency(@total_amount) %></strong>
         · отмечено: <strong data-payment-line-select-target="total"><%= number_to_currency(0) %></strong>
       </p>
@@ -91,6 +91,8 @@
         <% end %>
       </tbody>
     </table>
+
+    <%= render_pagination %>
 
     <div class="flex flex-wrap gap-3">
       <%= submit_tag "К подтверждению оплаты",

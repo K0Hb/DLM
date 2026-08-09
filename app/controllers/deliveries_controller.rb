@@ -1,7 +1,7 @@
 class DeliveriesController < ApplicationController
   def index
     authorize WorkOrder, :index?
-    @work_orders = policy_scope(WorkOrder).where(status: "ready").includes(:customer, :patient).order(:number)
+    @work_orders = paginate(policy_scope(WorkOrder).where(status: "ready").includes(:customer, :patient).order(:number))
   end
 
   def mark_sent

@@ -278,23 +278,97 @@ class WorkOrdersTest < ActionDispatch::IntegrationTest
     assert_equal "closed", order.reload.status
   end
 
-  test "completed service line cannot be deleted" do
+  test "completed service line is soft-removed preserving payment history" do
     order = create_completed_ready_order
     line = order.work_order_services.first
+    order.update!(status: "in_progress") # allow structure edits while keeping completed line
+    line.update!(
+      technician_paid: true,
+      technician_paid_at: Time.current,
+      technician_paid_by: @admin
+    )
+    event = PaymentEvent.create!(
+      event_type: "technician_paid",
+      actor: @admin,
+      work_order: order,
+      work_order_service: line,
+      amount: line.amount,
+      created_at: Time.current
+    )
 
     sign_in @admin
     get work_order_path(order)
     assert_response :success
-    assert_select "button", text: "Удалить", count: 0
+    assert_select "button", text: "Снять"
 
     assert_no_difference("WorkOrderService.count") do
       delete work_order_work_order_service_path(order, line)
     end
     assert_redirected_to work_order_path(order)
-    assert_match(/Выполненную услугу нельзя удалить/, flash[:alert].to_s)
+    line.reload
+    assert line.removed?
+    assert_equal @admin.id, line.removed_by_id
+    assert_includes order.reload.work_order_services.map(&:id), line.id
+    assert_not_includes order.assigned_service_lines.map(&:id), line.id
+    assert_equal line.id, event.reload.work_order_service_id
+
+    get reports_payroll_path, params: { from: Date.current.to_s, to: Date.current.to_s }
+    assert_response :success
+    assert_match line.service.name, response.body
   end
 
-  test "assigned service line can be deleted" do
+  test "in_progress service line is soft-removed" do
+    order = create_order_with_line
+    line = order.work_order_services.first
+    line.start!(by: @admin)
+
+    sign_in @admin
+    assert_no_difference("WorkOrderService.count") do
+      delete work_order_work_order_service_path(order, line)
+    end
+    assert_redirected_to work_order_path(order)
+    assert line.reload.removed?
+    assert_empty order.reload.assigned_service_lines
+  end
+
+  test "paid assigned service line is soft-removed" do
+    order = create_order_with_line
+    line = order.work_order_services.first
+    order.update!(status: "in_progress")
+    line.update!(
+      technician_paid: true,
+      technician_paid_at: Time.current,
+      technician_paid_by: @admin
+    )
+
+    sign_in @admin
+    assert_no_difference("WorkOrderService.count") do
+      delete work_order_work_order_service_path(order, line)
+    end
+    assert_redirected_to work_order_path(order)
+    assert line.reload.removed?
+  end
+
+  test "soft-removed incomplete line does not block ready" do
+    order = create_order_with_line
+    stuck = order.work_order_services.first
+    stuck.start!(by: @admin)
+    stuck.soft_remove!(by: @admin)
+
+    good = order.work_order_services.create!(
+      service: services(:crown),
+      assignee: @employee,
+      quantity: 1
+    )
+    good.start!(by: @admin)
+    good.complete!(by: @admin)
+
+    assert order.reload.all_services_completed?
+    order.advance_to!("ready", by: @admin)
+    assert_equal "ready", order.reload.status
+  end
+
+  test "assigned unpaid service line can be hard deleted" do
     order = create_order_with_line
     line = order.work_order_services.first
 
@@ -303,6 +377,20 @@ class WorkOrdersTest < ActionDispatch::IntegrationTest
       delete work_order_work_order_service_path(order, line)
     end
     assert_redirected_to work_order_path(order)
+  end
+
+  test "work orders index paginates at 40 per page" do
+    45.times { create_order }
+
+    get work_orders_path
+    assert_response :success
+    assert_select "nav[aria-label=Страницы]", text: /из 4[5-9]|из [5-9]\d|из \d{3}/
+    assert_select "nav[aria-label=Страницы]", text: /по 40 на странице/
+    assert_select "a", text: "Вперёд →"
+
+    get work_orders_path(page: 2)
+    assert_response :success
+    assert_select "span[aria-current=page]", text: "2"
   end
 
   private

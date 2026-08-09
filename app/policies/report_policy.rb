@@ -14,4 +14,16 @@ class ReportPolicy < ApplicationPolicy
   def unpaid?
     admin_or_superadmin?
   end
+
+  def funnel?
+    admin_or_superadmin?
+  end
+
+  def customers?
+    admin_or_superadmin?
+  end
+
+  def services?
+    admin_or_superadmin?
+  end
 end
