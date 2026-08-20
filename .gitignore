@@ -36,6 +36,7 @@
 
 # Ignore node modules if present.
 /node_modules/
+/tooling/**/node_modules/
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
