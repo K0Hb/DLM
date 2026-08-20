@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "/home/vyacheslav/.asdf/installs/nodejs/22.16.0/bin/node",
+      "args": [
+        "/home/vyacheslav/my_projects/DLM/tooling/demo/node_modules/@playwright/mcp/cli.js",
+        "--browser",
+        "chromium",
+        "--isolated"
+      ],
+      "env": {
+        "PATH": "/home/vyacheslav/.asdf/installs/nodejs/22.16.0/bin:/usr/bin:/bin"
+      }
+    }
+  }
+}
